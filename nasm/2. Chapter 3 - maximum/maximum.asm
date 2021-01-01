@@ -7,6 +7,7 @@ section .data
 
 data_items:
     dq 3,67,34,222,45,75,54,34,44,33,22,11,66,255,0
+;dq (Define Quadword) is an 8 Byte constant.
 
 section .text
 
