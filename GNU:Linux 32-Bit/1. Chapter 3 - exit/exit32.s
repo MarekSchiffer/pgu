@@ -2,12 +2,10 @@
 #                                                                              #
 #              Programming From The Ground Up - Jonathan Bartlett              #
 #                                 Page 19 - 20                                 #
-#                      Typed in & Comments by Marek Schiffer                   #
+#                     Typed in & Commented by Marek Schiffer                   #
 #                                                                              #
 #                                                                              #
 ################################################################################
-
-# Gihub Test
 
 #Purpose: Simple program that exits and returns a
 #	  status code back to the Linux kernel

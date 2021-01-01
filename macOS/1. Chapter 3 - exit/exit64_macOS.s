@@ -23,19 +23,23 @@
 # Changes to 32-Bit:
 # eXX Registers are 4 Byte or 32-Bit and cahnge to 8 Byte or 64 Bit rXX registers.
 # movq (move Quadword) is used for 64 Bit registers
-# Value 60 in %eax is used for exit interupt
-# rdi holds the return status
+# Value 60 in %Aax is used for exit interupt
+# rdi (register destination index) holds the return status
 # syscall
 
 
+# Changes to GNU/Linux 64-Bit
+# .section data, .section text  =>  .data, .text
+# system call $60  => 0x2000001 for macOS kernel.
+
 #Purpose: Simple program that exits and returns a
-#	  status code back to the Linux kernel
+#	  status code back to the macOS kernel
 #
 #         To assembly use
-#         as -64 exit64.s -o exit.o
+#	  as -arch x86_64 exit64_macOS.s -o exit64_macOS.o
 #
 #         For linking:
-#         ld exit.o -o exit
+#         ld -macosx_version_min 11.0 -L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib -lSystem -e _start exit64_macOS.o -o exit64_macOS	
 
 #Input: none
 #
@@ -47,20 +51,22 @@
 
 
 # Variables:
-# %eax holds the system call number
-# %ebx hold the return status 
+# %rax holds the system call number
+# %rdi hold the return status 
 
 
 # Every .section instruction is for the assembler and not for
 # the computer. 
 #
-# .section .data will later contain data.
+# .data will later contain data.
+#
+# NOTE: on macOS the .section part is removed.
 
-.section .data
+.data
 
 
 # The section .text is, where the program instructions live.
-.section .text
+.text
 
 # _start is a symbol, it will be replaced during assembly or linking.
 # Symbols are used to mark locations or data of programs.
@@ -71,23 +77,18 @@
 
 # Notice the : _start: is a a "label". A label is a symbol with the colon
 _start:
-#	movl $1, %eax	    # $60 is direct adressing mode and loads
-	movq $60, %rax	    # the value 60 into register %rax
-			    # This is the linux kernel command
-			    # number (system call) for exiting
-			    # a program
+	movq $0x2000001, %rax	 # The syscalls in macOS can be optained from
+				 # syscall.h, located
 
-#	movl $253, %ebx     # $64 is direct adressing mode and loads
+# The explantaion for 0x200000 is given in syscall_sw.h, located at
+# [...]/Frameworks/Kernel.framework/Versions/A/Headers/mach/arm/syscall_sw.h
+# Quoting "lzana" https://stackoverflow.com/questions/48845697/macos-64-bit-system-call-table
+
 	movq $64, %rdi      # the value 64 into registr %rdi
 			    # This is the status number, we will
 			    # return to the operating system.
-                            # In 64-Bit the exit number can be 1 Byte.
-                            # We can therefore choose a number between
-			    # 0 and 255.
-    
+                            # The number is elm [0,255]    
 
-
-#	int $0x80           # This wakes up the kernel to run the 
 	syscall	            # exit command.
 
-#syscall  depends on what number is in %rax 
+# As in the 64-Bit version of GNU/Linux.
