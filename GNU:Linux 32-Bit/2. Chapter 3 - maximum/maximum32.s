@@ -10,6 +10,11 @@
 # Purpose: This program finds the maximum number of a 
 #          set of number (data items).
 #
+#         To assembly use
+#         as -32 exit.s -o exit.o
+#
+#         For linking:
+#         ld -m elf_i386 exit.o -o exit
 
 
 # Variables: The registers have the following uses:
