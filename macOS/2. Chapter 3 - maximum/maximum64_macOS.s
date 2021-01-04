@@ -22,7 +22,11 @@
 # 3. rax value for interupt is 60 (not 1 as for 32bit)
 # 4. edi holds the return status (not ebx as for 32bit)
 # 5. int $0x080  -> syscall
-# 
+
+# Changes on macOS
+# ELF to Macho-O
+# .section .data, .section .text  => .data, .text
+
 
 
 # Purpose: This program finds the maximum number of a 
