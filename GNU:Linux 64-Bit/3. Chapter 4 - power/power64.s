@@ -12,6 +12,12 @@
 #          2^3 + 5^2
 #
 
+#Changes for 64-Bit:
+
+
+
+
+
 # Everything in the main program is stored in registers, 
 # so the data section doesn't have anything.
 .section .data
@@ -21,28 +27,28 @@
 .global _start
 
 _start:
-	pushl $3		      # First we push the power on the stack
-	pushl $2		      # no the base
+	pushq $3		      # First we push the power on the stack
+	pushq $2		      # no the base
 	call power		      # Here we call power, This does two things.
 			              # 1. Push return address on the stack 2. Change eip to
 				      # first beginning of power funciton
 
-	addl $8, %esp                 # move the stack pointer two values down so 3 and 2 will
+	addq $16, %rsp                 # move the stack pointer two values down so 3 and 2 will
 				      # be overwritten
 
-	pushl %eax		      # pushes the result %eax onto the stack to save it.
+	pushq %rax		      # pushes the result %eax onto the stack to save it.
 
-	pushl $2		      # Same as above for 5^2
-	pushl $5
+	pushq $2		      # Same as above for 5^2
+	pushq $5
 	call power
-	addl $8, %esp
+	addq $16, %rsp
 	
-	popl %ebx                     # Get the result from 2^3 from the stack intro %ebx
+	popq %rdi                     # Get the result from 2^3 from the stack intro %ebx
 	
-	addl %eax, %ebx               # add 2^3 and 5^2. Result is in %ebx
+	addq %rax, %rdi               # add 2^3 and 5^2. Result is in %ebx
 
-	movl $1, %eax
-	int $0x80
+	movq $60, %rax
+	syscall
 
 # PURPOSE: The function is used to compute
 #          the value of a number raiset to
@@ -65,14 +71,14 @@ _start:
 
 .type power, @function
 power:
-	pushl %ebp                     # The base pointer goes on the stack
-	movl  %esp, %ebp               # The base pointer gets replaced by the stack pointer
-	subl  $4, %esp		       # Substract 4 from the stack pointer
+	pushq %rbp                     # The base pointer goes on the stack
+	movq  %rsp, %rbp               # The base pointer gets replaced by the stack pointer
+	subq  $8, %rsp		       # Substract 4 from the stack pointer
 
-	movl 8(%ebp), %ebx             # Before the function is called, the power and then the 
-	movl 12(%ebp), %ecx            # base are pushed on the stack. Now we load the base in %ebx
+	movq 16(%rbp), %rbx             # Before the function is called, the power and then the 
+	movq 24(%rbp), %rcx            # base are pushed on the stack. Now we load the base in %ebx
 				       # and power in %ebx
-	movl %ebx, -4(%ebp)
+	movq %rbx, -8(%rbp)
 
 #Stack at this point:
 #     power 3           12(%ebp) = %ecx
@@ -83,29 +89,29 @@ power:
 #    
 power_loop_start:
 
-	cmpl $1, %ecx                  # End loop if power is 1
+	cmpq $1, %rcx                  # End loop if power is 1
 	je end_power
 	
-	movl -4(%ebp), %eax            # move base from the stack intro %eax
-	imull %ebx, %eax               # multiply base with base ans put result in %eax.
-	movl %eax, -4(%ebp)            # put new result on the stack
-	decl %ecx		       # remove power by 1.
+	movq -8(%rbp), %rax            # move base from the stack intro %eax
+	imulq %rbx, %rax               # multiply base with base ans put result in %eax.
+	movq %rax, -8(%rbp)            # put new result on the stack
+	decq %rcx		       # remove power by 1.
 jmp power_loop_start                   # keep going untill power is 1
-	cmpl $1, %ecx
+	cmpq $1, %rcx
 	je end_power
 	
-	movl -4(%ebp), %eax
-	imull %ebx, %eax
-	movl %eax, -4(%ebp)
+	movq -8(%rbp), %rax
+	imulq %rbx, %rax
+	movq %rax, -8(%rbp)
 	
-	decl %ecx
+	decq %rcx
 	jmp power_loop_start
 
 end_power:
-	movl -4(%ebp), %eax            # move the result from the stack in %eax
+	movq -8(%rbp), %rax            # move the result from the stack in %eax
 
-	movl %ebp, %esp                # move base pointer to stack pointer. %ebp never moved.
-	popl %ebp                      # remove old Base pointer from stack, esp now points to return address.
+	movq %rbp, %rsp                # move base pointer to stack pointer. %ebp never moved.
+	popq %rbp                      # remove old Base pointer from stack, esp now points to return address.
 	ret	                       # return  address to ip.
 
 #Stack at this point:

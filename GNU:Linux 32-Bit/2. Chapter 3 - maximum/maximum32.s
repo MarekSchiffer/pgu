@@ -2,7 +2,7 @@
 #                                                                              #
 #              Programming From The Ground Up - Jonathan Bartlett              #
 #                                 Page 31 - 33                                 #
-#                      Typed in & Comments by Marek Schiffer                   #
+#                     Typed in & Commented by Marek Schiffer                   #
 #                                                                              #
 #                                                                              #
 ################################################################################

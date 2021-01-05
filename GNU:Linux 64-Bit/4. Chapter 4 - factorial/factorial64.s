@@ -13,6 +13,10 @@
 #           4!=4*3*2*1=24
 #
 
+# Changes for 64 Bit:
+# 1.) All instruactions changed from long to quad, i.e. movl -> movq ...
+# 2.) stackspace for instructions doubled.
+
 # This program shows, how to call a function recursively
 
 .section .data
@@ -26,13 +30,13 @@
 		  # the function among other programs
 
 _start:                        # 01
-	pushl $4               # 02
+	pushq $4               # 02
 	call factorial         # 03
-	addl $4, %esp          # 04
+	addq $8, %rsp          # 04
                                # 05
-	movl %eax, %ebx        # 06
-	movl $1, %eax          # 07
-	int $0x80              # 08
+	movq %rax, %rdi        # 06
+	movl $60, %eax          # 07
+	syscall              # 08
 
 
 # This is the acutal function definition
@@ -40,23 +44,23 @@ _start:                        # 01
 .type factorial, @function     #09
 
 factorial:                     # 10	
-	pushl %ebp             # 11         # Push ebp onto the stack
-	movl %esp, %ebp        # 12         # and copy esp to ebp
-	movl 8(%ebp), %eax     # 13         # get the value into eax. 8, because of the return address.
+	pushq %rbp             # 11         # Push ebp onto the stack
+	movq %rsp, %rbp        # 12         # and copy esp to ebp
+	movq 16(%rbp), %rax     # 13         # get the value into eax. 8, because of the return address.
 
-	cmpl $1, %eax          # 14         # check for recusion anchor
+	cmpq $1, %rax          # 14         # check for recusion anchor
 	je end_factorial       # 15         # jump to end, if the anchor holds true
 
-	decl %eax	       # 16 	# (if not) decrease n to (n-1)
-	pushl %eax             # 17         # push (n-1) onto the stack
+	decq %rax	       # 16 	# (if not) decrease n to (n-1)
+	pushq %rax             # 17         # push (n-1) onto the stack
 	call factorial         # 18         # call factorial with (n-1). The return address is
                                # 19         # after the function call, here 19.          
-	movl 8(%ebp), %ebx     # 20        
-	imull %ebx, %eax       # 21           
+	movq 16(%rbp), %rbx     # 20        
+	imulq %rbx, %rax       # 21           
 
 end_factorial:                 # 22
-movl %ebp, %esp                # 23         # This part will be executed for every function, after 
-popl %ebp                      # 24         # they returned
+movq %rbp, %rsp                # 23         # This part will be executed for every function, after 
+popq %rbp                      # 24         # they returned
 ret                            # 25
 
 #   Stack until second call of		       eax      ebp    ip
