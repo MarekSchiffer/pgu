@@ -42,27 +42,27 @@ _start:                        # 01
 	addq $8, %rsp          # 04
                                # 05
 	movq %rax, %rdi        # 06
-	movl $0x2000001, %eax          # 07
-	syscall              # 08
+	movl $0x2000001, %eax  # 07
+	syscall                # 08
 
 
 # This is the acutal function definition
 
-#.type factorial, @function     #09
+#.type factorial, @function    # 09
 
 factorial:                     # 10	
 	pushq %rbp             # 11         # Push ebp onto the stack
 	movq %rsp, %rbp        # 12         # and copy esp to ebp
-	movq 16(%rbp), %rax     # 13         # get the value into eax. 8, because of the return address.
+	movq 16(%rbp), %rax    # 13         # get the value into eax. 8, because of the return address.
 
 	cmpq $1, %rax          # 14         # check for recusion anchor
 	je end_factorial       # 15         # jump to end, if the anchor holds true
 
-	decq %rax	       # 16 	# (if not) decrease n to (n-1)
+	decq %rax	       # 16 	    # (if not) decrease n to (n-1)
 	pushq %rax             # 17         # push (n-1) onto the stack
 	call factorial         # 18         # call factorial with (n-1). The return address is
                                # 19         # after the function call, here 19.          
-	movq 16(%rbp), %rbx     # 20        
+	movq 16(%rbp), %rbx    # 20        
 	imulq %rbx, %rax       # 21           
 
 end_factorial:                 # 22
