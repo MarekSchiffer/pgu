@@ -15,7 +15,7 @@
 # Changes for 64-Bit:
 # eax,ebx, ecx, edx -> rax, rbx, rcx, rdx
 # edi, esp, ebp -> rdi, rsp, rbp	
-# movq, pushq, popq, subl, cmpl, addl, incl  -> movq, pushq, popq
+# movl, pushl, popl, subl, cmpl, addl, incl  -> movq, pushq, popq, subq, cmpq, addq, incq
 # syscall -> syscall
 # rax -> rdi for syscalls
 # x80 exit -> 60
@@ -33,7 +33,7 @@
 .equ SYS_CLOSE, 3		# 6 -> 3
 .equ SYS_EXIT, 60		# 1 -> 60
 
-# options for open ( look at /usr/include/asm/fcntl.h
+# options for open ( look at /usr/include/asm-generic/fcntl.h
 # for various values. You can combine them by adding
 # them or ORing them )
 # This is discussed at greater length in "Counting Like a Computer"
@@ -63,22 +63,22 @@
 .equ BUFFER_SIZE, 500
 .lcomm BUFFER_DATA, BUFFER_SIZE     # Defines a local uninitialized block of storage. ( Pseudo opcode )
 				    # We can now get the address of the start of the buffer with
-				    # $BUFFER_DATA, and the elemnt with BUFFER_DATA <- TO CHECK
+				    # $BUFFER_DATA, and the elemnt with BUFFER_DATA.
 
 .section .text
 
 #STACK Positions					# Remeber, these are just constants.
-.equ ST_SIZE_RESERVE, 16					# We'll reserve 8 bytes on the stack.
-.equ ST_FD_IN, -8					# -4 to 0 for file descritor of the Inputfile	
-.equ ST_FD_OUT, -16					# -8 to -4 for file descritor of the Outputfile	
-.equ ST_ARGC, 0         # Number of arguments		# C convention main(syscall argc, char *argv[])
-.equ ST_ARGV_0, 8	# Name of program		# syscall - 4 bytes
-.equ ST_ARGV_1, 16       # Input file name		# char - 4 bytes
+.equ ST_SIZE_RESERVE, 16				# We'll reserve 16 bytes on the stack.
+.equ ST_FD_IN, -8					# 0 to -8 for file descritor of the Inputfile	
+.equ ST_FD_OUT, -16					# -8 to -16 for file descritor of the Outputfile	
+.equ ST_ARGC, 0         # Number of arguments		# C convention main(int argc, char *argv[])
+.equ ST_ARGV_0, 8	# Name of program		# int* - 8 bytes
+.equ ST_ARGV_1, 16      # Input file name		# char* - 8 bytes
 .equ ST_ARGV_2, 24      # Output file name
 
-# Linux puts the posyscallers to the command line arguments automaically on the stack. 
+# Linux puts the pointers to the command line arguments automaically on the stack. 
 # Remember in reverse order. The number of arguments is stored in %(rsp)
-# The name of the program is stored at 4(%rsp), and the arguments from 8(%rsp) to 4*N+4(%rsp)
+# The name of the program is stored at 8(%rsp), and the arguments from 16(%rsp) to 8*N+8(%rsp)
 
 .global _start
 
@@ -113,7 +113,7 @@ syscall
 
 store_fd_in:
 # Save the given file descriptor
-movq %rax, ST_FD_IN(%rbp)                     # ST_FD_IN is -4 => -4(%rbp). rbp was inilzilaized at the start
+movq %rax, ST_FD_IN(%rbp)                     # ST_FD_IN is -8 => -8(%rbp). rbp was inilzilaized at the start
 					      # directly above %rbp is the file discriptor for the Inputfile
 
 
@@ -172,7 +172,7 @@ continue_read_loop:
 	#### WRITE THE BLOCK OUT TO THE OUTPUT FILE ####
 	# size of the buffer
 	movq %rax, %rdx						# The return value is in %rax and is no moved
-	movq $SYS_WRITE, %rax					# to %rdx, why not immrdiatly pop it to rdx?
+	movq $SYS_WRITE, %rax					# to %rdx, why not immediatly pop it to rdx?
 
 	#file to use
 	movq ST_FD_OUT(%rbp), %rdi  # rbx -> rdi
@@ -218,7 +218,7 @@ end_loop:
 #		%rbx - length of buffer
 #		%rcx - current buffer offset
 #		%cl  - current byte being examined
-#		       (first part of %(rcx)
+#		       (first part of %(ecx)
 #
 #
 
