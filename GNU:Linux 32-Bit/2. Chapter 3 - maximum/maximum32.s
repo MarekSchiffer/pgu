@@ -39,11 +39,16 @@
 #           other data types are .byte, .int, .ascii
 
 # INDEXED ADDRESSING MODE:
-# The most interesting thing here is the "Indexed Addressing Mode"
-# BeginningAddress (%Base_or_Offset,%IndexRegister,WordSizs)
+# The most interesting thing here is the "Indexed Addressing Mode".
+# First note:
+# movl data_items, %eax is "Direct Addressing Mode", %eax holds the value (directly).
+# movl $data_items, %eax would load the address of data_items into %eax "Immediate Mode".
+#
+# Final Address = BeginningAddress(%Base_or_Offset,%IndexRegister,WordSizes)
 #
 # data_items(,%edi,4), data_items is the address of the list. the 0 item is 3
-# The Index Reigistr will be calculated with %edi*4
+# The Index Reigister will be calculated with %edi*4 and give back the value as in 
+# the "Direct Addresing Mode"
 
 
 # NOTE: 
@@ -59,9 +64,9 @@ data_items:
 
 _start:
 	movl $0, %edi			        # Fill %edi (loop counter) with 0.
-	movl data_items(,%edi,4), %eax		# This is the and "Indexed Addressing Mode"
+	movl data_items(,%edi,4), %eax		# This is the "Indexed Addressing Mode"
+						# movl data_item, %eax is "Direct Addressing Mode" (s.a.)
 	movl %eax, %ebx				# The first value is the largest, move it to %ebx
-
 start_loop:
 
 	cmpl $0, %eax				# cmpl (compare long). Check if the current value is 0

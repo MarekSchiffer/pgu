@@ -8,11 +8,17 @@
 #                                                                              #
 ################################################################################
 
+# Changes for RIP-Relative
+# Now we use RIP-relative addressing mode, which is mandatory for macOS
+#
+# leaq data_items(%rip), %rsi
+# movq data_items(,%rdi,8), %rax  =>  movq (%rsi,%rdi,8), %rax
+
 # Changes in 64-Bit Version 2
 # We use the whole 64 Bit registers.
 # Changes all eXX registers to rXX and l-instructions to q-instructions.
 
-#changes compared to 32bit:
+# Changes compared to 32bit:
 #
 # 1. 4byte edi register -> 8byte rdi register
 # 2. uses movq, incq and not movl, incl for 8byte long rdi register
@@ -60,6 +66,23 @@
 # The Index Reigister will be calculated with %edi*4 and give back the value as in 
 # the "Direct Addresing Mode"
 
+# lea (Load Effective Address)
+#
+# First note, 
+# 4(%rip) means 4 bytes past the end of the current instruction, where
+# rip is pointing at. 
+#
+# HOWEVER
+#
+# data_items(%rip) means, calculate a rel32 replacement to reach 
+# data_items. After assembling, data_items will be replaced by the 
+# number to reach data_items.
+# if we wrote movq data_items(%rip), %rsi, we would load the value 3
+# into %rsi
+# to get the address, we use lea
+# leag data_items(%rip), %rsi, we load the address of data_items into %rsi
+
+
 # NOTE: 
 # If a comparsion is made the %eflags register will have a bit set and the je, jle will use
 # these bits. It's exactly as in J. Clark Scott - But How Do it know?
@@ -73,10 +96,14 @@ data_items:
 .global _start
 
 _start:
+	leaq data_items(%rip), %rsi		# We load the address of data_items, relative to %rip
+						# into %rsi
+
 	movq $0, %rdi			        # Fill %rdi (loop counter) with 0.
 						# rdi is a 8 Byte register. Therefore we need movq
 						# move quad word
-	movq data_items(,%rdi,8), %rax		# This is the and "Indexed Addressing Mode" (s.a)
+	movq (%rsi,%rdi,8), %rax		# This is the and "Indexed Addressing Mode" (s.a)
+						# but now, we are using %rsdi+%rdi*8	
 						#
 						# We are now moving in steps of 8 Bytes foreward.
 						#
@@ -90,7 +117,7 @@ start_loop:
 	je loop_exit                            # if equal (je =^ jump equal) yes, jump to exit.
 
 	incq %rdi				# increase loop counter. 
-	movq data_items(,%rdi,8), %rax		# Same as above, check above.
+	movq (%rsi,%rdi,8), %rax		# Same as above, check above.
 	cmpq %rbx, %rax
 	jle start_loop				# jle =^ jump less equal. If the next item is smaller than jump.
 	

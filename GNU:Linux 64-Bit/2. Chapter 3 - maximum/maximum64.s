@@ -10,9 +10,9 @@
 
 #64bit version
 
-#changes compared to 32bit:
+# Changes compared to 32bit:
 #
-# 1. 4byte edi register -> 8byte rdi register
+# 1. 4byte edi register -> 8byte rdi register, 
 # 2. uses movq, incq and not movl, incl for 8byte long rdi register
 # 3. rax value for interupt is 60 (not 1 as for 32bit)
 # 4. edi holds the return status (not ebx as for 32bit)
@@ -38,7 +38,7 @@
 
 # The idea is simple, we fill the first number in %ebx. %edi is the loop
 # counter, starting at 0. %ebx will constantly be updated, if the next value 
-# is bigger. If not kkjj
+# is bigger.
 
 .section .data
 
@@ -47,11 +47,16 @@
 #           other data types are .byte, .int, .ascii
 
 # INDEXED ADDRESSING MODE:
-# The most interesting thing here is the "Indexed Addressing Mode"
-# BeginningAddress (%Base_or_Offset,%IndexRegister,WordSizs)
+# The most interesting thing here is the "Indexed Addressing Mode".
+# First note:
+# movl data_items, %eax is "Direct Addressing Mode", %eax holds the value (directly).
+# movl $data_items, %eax would load the address of data_items into %eax "Immediate Mode".
+#
+# Final Address = BeginningAddress(%Base_or_Offset,%IndexRegister,WordSizes)
 #
 # data_items(,%edi,4), data_items is the address of the list. the 0 item is 3
-# The Index Reigistr will be calculated with %edi*4
+# The Index Reigister will be calculated with %edi*4 and give back the value as in 
+# the "Direct Addresing Mode"
 
 
 # NOTE: 

@@ -30,7 +30,7 @@
 .equ O_RDONLY, 0
 .equ O_CREAT_WRONGLY_TRUNC, 03101
 
-# standrard file descriptors
+# standard file descriptors
 .equ STDIN, 0
 .equ STDOUT, 1
 .equ STDERR, 2
@@ -52,20 +52,21 @@
 .equ BUFFER_SIZE, 500
 .lcomm BUFFER_DATA, BUFFER_SIZE     # Defines a local uninitialized block of storage. ( Pseudo opcode )
 				    # We can now get the address of the start of the buffer with
-				    # $BUFFER_DATA, and the elemnt with BUFFER_DATA <- TO CHECK
+				    # $BUFFER_DATA "Immediate Mode", and the element with BUFFER_DATA
+				    # "Direct Mode"
 
 .section .text
 
 #STACK Positions					# Remeber, these are just constants.
 .equ ST_SIZE_RESERVE, 8					# We'll reserve 8 bytes on the stack.
-.equ ST_FD_IN, -4					# -4 to 0 for file descritor of the Inputfile	
-.equ ST_FD_OUT, -8					# -8 to -4 for file descritor of the Outputfile	
+.equ ST_FD_IN, -4					# -4 to 0 for file descritor of the Inputfile
+.equ ST_FD_OUT, -8					# -8 to -4 for file descritor of the Outputfile
 .equ ST_ARGC, 0         # Number of arguments		# C convention main(int argc, char *argv[])
 .equ ST_ARGV_0, 4	# Name of program		# int - 4 bytes
 .equ ST_ARGV_1, 8       # Input file name		# char - 4 bytes
 .equ ST_ARGV_2, 12      # Output file name
 
-# Linux puts the pointers to the command line arguments automaically on the stack. 
+# Linux puts the pointers to the command line arguments automaically on the stack.
 # Remember in reverse order. The number of arguments is stored in %(esp)
 # The name of the program is stored at 4(%esp), and the arguments from 8(%esp) to 4*N+4(%esp)
 
@@ -82,7 +83,7 @@ _start:
 subl $ST_SIZE_RESERVE, %esp					# We move the stack pointer 8 FOREWARD!
 								# Remember, the Stack grows downwards
 								# and the axis shows upwards.
-				# At this point %esp=%ebp+8. The 
+				# At this point %esp=%ebp+8.
 
 open_files:
 open_fd_in:
@@ -92,7 +93,7 @@ open_fd_in:
 # open syscall                               # (%eax SYS_OPEN, %ebx InputFile, %ecx Flag, %edx Permisson)
 movl $SYS_OPEN, %eax			     # Just a setup for the syscall.
 # input filename into %ebx
-movl ST_ARGV_1(%ebp), %ebx
+movl ST_ARGV_1(%ebp), %ebx		     # Note: here ST_ARGV_1 will be replaced by 8. It's not like with (%rip)
 # read-only flag
 movl $O_RDONLY, %ecx
 # This doesn't really matter for reading
@@ -123,35 +124,50 @@ int $LINUX_SYSCALL
 
 store_fd_out:
 # store file descriptor here
-movl %eax, ST_FD_OUT(%ebp)                    # See ST_FD_IN, file descpriptor for the Outfile lives two away 
+movl %eax, ST_FD_OUT(%ebp)                    # See ST_FD_IN, file descpriptor for the Outfile lives two away
 					      # from ebp.
 
 #### BEGIN MAIN LOOP ####
 read_loop_begin:
 
 	#### READ IN A BLOCK FORM THE INPUT FILE ####
-	movl $SYS_READ, %eax					# Again just a setup for the syscall 
+	movl $SYS_READ, %eax					# Again just a setup for the syscall
 	#get the input file descriptor
 	movl ST_FD_IN(%ebp), %ebx
 	#the location to read into
-	movl $BUFFER_DATA, %ecx
+	# Can the
+	movl $BUFFER_DATA, %ecx					# $BUFFER_DATA is "Immediate Mode", Address of BUFFER_DATA
 	# the size of the buffer
 	movl $BUFFER_SIZE, %edx
-	#Size of buffer read is returned into %eax                   # eax has 32 bits = 4 bytes
+	#Size of buffer read is returned into %eax              # eax has 32 bits = 4 bytes
 	int $LINUX_SYSCALL
+
+# At this point, the syscall, reads the bytes from the file, and copies them to the
+# 500 bytes reserved for BUFFER_DATA. The syscall also returns the size of the read bytes
+# (charactes 0x20 is a space, 0x0a a newline) into %eax
+#
+# The mystery here is, how read knows, where to start the read instruction after the first
+# itteration. Normally we would expect to pass the starting point i.e. byte 501,1001, etc
+# after the first iteration.
+
+# This operation is completely hidden within the read function. Internally there is loff_t pos,
+# which keeps track of the current position in the file. Therefore every time we call read,
+# we start at the correct position. Once the end of the file is reached, read will return 0
+# as is 0 characters have been read and we can terminate the loop.
+
 
 
 	#### EXIT IF WE'VE RACHED THE END ####
 	# check for the EOF marker
-	cmpl $END_OF_FILE, %eax					# If %eax is 0 after the syscall, we
-	# if found or on error, go the end                      # reached the end of the file
-	jle end_loop						# is thath \0? What happens, if we put
-								# 0 in the file? 0 in ASCII is 48.
+	cmpl $END_OF_FILE, %eax
+	# if found or on error, go the end
+	jle end_loop
+
 
 continue_read_loop:
 
 	#### CONVERT THE BLOCK TO UPPER CASE ####
-	pushl $BUFFER_DATA		# location of buffer    $BUFFER_DATA is the element
+	pushl $BUFFER_DATA		# location of buffer
 	pushl %eax			# size of the buffer
 	call convert_to_upper
 	popl %eax			# get the size back
@@ -160,7 +176,7 @@ continue_read_loop:
 
 	#### WRITE THE BLOCK OUT TO THE OUTPUT FILE ####
 	# size of the buffer
-	movl %eax, %edx						# The return value is in %eax and is no moved
+	movl %eax, %edx						# The return value is in %eax and is now moved
 	movl $SYS_WRITE, %eax					# to %edx, why not immediatly pop it to edx?
 
 	#file to use
