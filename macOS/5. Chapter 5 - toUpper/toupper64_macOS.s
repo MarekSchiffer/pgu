@@ -5,32 +5,46 @@
 # PROCESSING: 1. Open the input file
 #	      2. Open the output file
 #	      3. While we're not at the end of the input file
-#		 a. Read part of file syscallo our memory buffer
+#		 a. Read part of file into  our memory buffer
 #		 b. go through each byte of memory
 #		    if the byte is a lower-case letter,
 #		    convert it to uppercase
 #	         c. write the memory buffer to output file
 
+# Changes for macOS:
+# 1. Remove .section
+# 2. Changes of the syscalls.
+# 3. Change O_RDONLY and O_CREAT_WRONGLY_TRUNC
+# 4. Change the Stack Positions due to padding in macOS
+
+# Changes for the RIP-Relative version:
+#
+# $BUFFER_DATA, %rsi  =>  leaq BUFFER_DATA(%rip), %rsi
+#
+# $BUFFER_DATA is immediate mode and the instruction loads the address of $BUFFER_DATA into %rsi.
+# leaq (Load Effective Address) does the same. Remember in BUFFER_DATA(%rip), BUFFER_DATA will
+# be replaced by the bytes needed to reach the Buffer from the next %rip address.
+#
+# pushq $BUFFR_DATA  => leaq BUFFER_DATA(%rip), %r11 pushq %r11
+#
+# We now need two instuctions, first we get the relative address and than we push it on the stack
+
 
 # Changes for 64-Bit:
+#
 # eax,ebx, ecx, edx -> rax, rbx, rcx, rdx
-# edi, esp, ebp -> rdi, rsp, rbp	
+# edi, esp, ebp -> rdi, rsp, rbp
 # movl, pushl, popl, subl, cmpl, addl, incl  -> movq, pushq, popq, subq, cmpq, addq, incq
-# syscall -> syscall
+# int -> syscall
 # rax -> rdi for syscalls
 # x80 exit -> 60
-# Stack positions doubled, also in STACK SUFF 
+# Stack positions doubled, also in STACK SUFF
 # $4 in cleanup $8
+
 
 .data
 
-#TestText:	
-#     .ascii "Write Motherfucker"
-#len:
-# .long . - TestText # string length
-
 ########## CONSTANTS ##########
-
 
 # system call numbers:
 .equ SYS_OPEN, 0x2000005		# 5 -> 2
@@ -44,12 +58,10 @@
 # them or ORing them )
 # This is discussed at greater length in "Counting Like a Computer"
 # Thx for wrtiting this in the code...
-.equ O_RDONLY,0x000 # 0xa02 # 0x0000   # 0 -> 64
-.equ O_CREAT_WRONGLY_TRUNC, 0x201 # 0xa02 #0x00000400 # 03101 0x0400  
+.equ O_RDONLY, 0x000 
+.equ O_CREAT_WRONGLY_TRUNC, 0x201 
 
-# /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk//usr/include/sys/fcntl.h
-
-# standrard file descriptors
+# standard file descriptors
 .equ STDIN, 0
 .equ STDOUT, 1
 .equ STDERR, 2
@@ -63,28 +75,29 @@
 .equ NUMBER_ARGUMENTS, 2
 
 .bss
-# Buffer - This is where the data is loaded syscallo from the data file
-#	   and written from syscallo the output file. This should never
+# Buffer - This is where the data is loaded into from the data file
+#	   and written from into the output file. This should never
 #          exceed 16,000 for various reasons.
 #
 
 .equ BUFFER_SIZE, 500
 .lcomm BUFFER_DATA, BUFFER_SIZE     # Defines a local uninitialized block of storage. ( Pseudo opcode )
 				    # We can now get the address of the start of the buffer with
-				    # $BUFFER_DATA, and the elemnt with BUFFER_DATA.
+				    # $BUFFER_DATA "Immediate Mode", and the element with BUFFER_DATA
+ 				    # "Direct Mode"
 
 .text
 
 #STACK Positions					# Remeber, these are just constants.
 .equ ST_SIZE_RESERVE, 16				# We'll reserve 16 bytes on the stack.
-.equ ST_FD_IN, -8					# 0 to -8 for file descritor of the Inputfile	
-.equ ST_FD_OUT, -16					# -8 to -16 for file descritor of the Outputfile	
-.equ ST_ARGC, 24         # 0 Number of arguments		# C convention main(int argc, char *argv[])
-.equ ST_ARGV_0, 32	# 8 Name of program		# int* - 8 bytes
-.equ ST_ARGV_1, 40      # 16 Input file name		# char* - 8 bytes
-.equ ST_ARGV_2, 48      # 24 Output file name
+.equ ST_FD_IN, -8					# 0 to -8 for file descritor of the Inputfile
+.equ ST_FD_OUT, -16					# -8 to -16 for file descritor of the Outputfile
+.equ ST_ARGC, 24         # Number of arguments		# C convention main(int argc, char *argv[])
+.equ ST_ARGV_0, 32	# Name of program		# int* - 8 bytes
+.equ ST_ARGV_1, 40      # Input file name		# char* - 8 bytes
+.equ ST_ARGV_2, 48      # Output file name
 
-# Linux puts the pointers to the command line arguments automaically on the stack. 
+# Linux puts the pointers to the command line arguments automaically on the stack.
 # Remember in reverse order. The number of arguments is stored in %(rsp)
 # The name of the program is stored at 8(%rsp), and the arguments from 16(%rsp) to 8*N+8(%rsp)
 
@@ -92,22 +105,16 @@
 
 _start:
 #### INITIALZIE PROGRAM ####
-# Save the stack posyscaller
+# Save the stack pointer
 
-#	xorq %rax, %rax
-#	xorq %rbx, %rbx
-#	xorq %rcx, %rcx
-#	xorq %rdx, %rdx
-#	xorq %rdi, %rdi
-#	xorq %rsi, %rsi
 	movq %rsp, %rbp						# We'll use the stack in the main function.
 
 # Allocate space for our file descriptors on the stack
 
-subq $ST_SIZE_RESERVE, %rsp					# We move the stack posyscaller 8 FOREWARD!
+subq $ST_SIZE_RESERVE, %rsp					# We move the stack pointer 8 FOREWARD!
 								# Remember, the Stack grows downwards
 								# and the axis shows upwards.
-				# At this posyscall %rsp=%rbp+8. The 
+				# At this pointer %rsp=%rbp+8. The
 
 open_files:
 open_fd_in:
@@ -116,12 +123,17 @@ open_fd_in:
 
 # open syscall                               # (%rax SYS_OPEN, %rbx InputFile, %rcx Flag, %rdx Permisson)
 movq $SYS_OPEN, %rax			     # Just a setup for the syscall.
-movq ST_ARGV_1(%rbp), %rdi
-movq $O_RDONLY, %rsi
+# input filename syscallo %rbx
+movq ST_ARGV_1(%rbp), %rdi      # rbx -> rdi
+# read-only flag
+movq $O_RDONLY, %rsi		 #rcx -> rsi
+# This doesn't really matter for reading
 movq $0666, %rdx
+# call linux
 syscall
 
 store_fd_in:
+# Save the given file descriptor
 movq %rax, ST_FD_IN(%rbp)                     # ST_FD_IN is -8 => -8(%rbp). rbp was inilzilaized at the start
 					      # directly above %rbp is the file discriptor for the Inputfile
 
@@ -130,82 +142,64 @@ open_fd_out:
 #### OPEN OUTPUT FILE ####
 
 
+# open the file				     # (%rax SYS_OPEN, %rbx OutputFile, %rcx Flag, %rdx Permisson)
 movq $SYS_OPEN, %rax			     # Just a setup for the syscall.
-movq ST_ARGV_2(%rbp), %rdi
-#movq $0xa02, %rsi  
-movq $O_CREAT_WRONGLY_TRUNC, %rsi  
+# output filename syscallo %rbx
+movq ST_ARGV_2(%rbp), %rdi	# rbx -> rdi
+# flags for writing to the file
+movq $O_CREAT_WRONGLY_TRUNC, %rsi  # rcx -> rsi
+#permission set for new file ( if it's created )
 movq $0666, %rdx
+#call linux
 syscall
 
-#movq %rax, %rdi
-#leaq TestText(%rip), %r11
-#movq %r11, %rsi
-#movq len(%rip), %rdx    # Why movq here and not leaq ???
-#movq $SYS_WRITE, %rax
-#syscall 
-#
 store_fd_out:
-movq %rax, ST_FD_OUT(%rbp)                    # See ST_FD_IN, file descpriptor for the Outfile lives two away 
+# store file descriptor here
+movq %rax, ST_FD_OUT(%rbp)                    # See ST_FD_IN, file descpriptor for the Outfile lives two away
 					      # from rbp.
-#movq $SYS_EXIT, %rax
-#movq $76, %rdi
-#syscall
 
-#####################################################################################################
-#	#### READ IN A BLOCK FORM THE INPUT FILE ####
-#	movq $SYS_READ, %rax					# Again just a setup for the syscall 
-#	#get the input file descriptor
-#	movq ST_FD_IN(%rbp), %rdi   # rbx -> rdi
-#	#the location to read syscallo
-#	leaq BUFFER_DATA(%rip), %r10			# %rsi, has now the address of the Buffer start
-#	movq %r10, %rsi
-#	# the size of the buffer
-#	leaq BUFFER_SIZE(%rip), %r11                    # %rdx, has now the address of Buffer size
-#	movq %r11,%rdx
-#	#Size of buffer read is returned syscallo %rax                   # rax has 32 bits = 4 bytes
-#	syscall
-#
-#
-#	movq $SYS_EXIT, %rax
-#	movq $23, %rdi
-#	syscall
-#
-#
-#####################################################################################################
-##### BEGIN MAIN LOOP ####
+#### BEGIN MAIN LOOP ####
 read_loop_begin:
 
-	movq ST_FD_IN(%rbp), %rdi
-	leaq BUFFER_DATA(%rip), %r10			# %rsi, has now the address of the Buffer start
-	movq %r10, %rsi
-	#movq BUFFER_SIZE(%rip), %rdx                   # %rdx, has now the address of Buffer size
-	movq $500, %rdx                   # %rdx, has now the address of Buffer size
-	movq $SYS_READ, %rax					# Again just a setup for the syscall 
+
+	#### READ IN A BLOCK FORM THE INPUT FILE ####
+	movq $SYS_READ, %rax					# Again just a setup for the syscall
+	#get the input file descriptor
+	movq ST_FD_IN(%rbp), %rdi   # rbx -> rdi
+	#the location to read syscall
+	leaq BUFFER_DATA(%rip), %rsi     # rcx -> rsi           # CHANGE 1
+	# the size of the buffer
+	movq $BUFFER_SIZE, %rdx
+	#Size of buffer read is returned into %rax                   # rax has 32 bits = 4 bytes
 	syscall
 
-#movq $SYS_EXIT, %rax
-#movq $23, %rdi
-#syscall
+# At this point, the syscall, reads the bytes from the file, and copies them to the
+# 500 bytes reserved for BUFFER_DATA. The syscall also returns the size of the read bytes
+# (charactes 0x20 is a space, 0x0a a newline) into %rax
+#
+# The mystery here is, how read knows, where to start the read instruction after the first
+# itteration. Normally we would expect to pass the starting point i.e. byte 501,1001, etc
+# after the first iteration.
+
+# This operation is completely hidden within the read function. Internally there is loff_t pos,
+# which keeps track of the current position in the file. Therefore every time we call read,
+# we start at the correct position. Once the end of the file is reached, read will return 0
+# as is 0 characters have been read and we can terminate the loop.
+
 
 	#### EXIT IF WE'VE RACHED THE END ####
 	# check for the EOF marker
+	cmpq $END_OF_FILE, %rax
+	# if found or on error, go the end
+	jle end_loop
 
-	cmpq $END_OF_FILE, %rax					# If %rax is 0 after the syscall, we
-	# if found or on error, go the end                      # reached the end of the file
-	jle end_loop						# is thath \0? What happens, if we put
-								# 0 in the file? 0 in ASCII is 48.
 
 continue_read_loop:
 
 	#### CONVERT THE BLOCK TO UPPER CASE ####
-	leaq BUFFER_DATA(%rip), %r11	# r11 has now the address of start of Buffer.
-	pushq %r11
-
-#	movq $SYS_EXIT, %rax
-#	movq (%r11), %rdi
-#	syscall
-
-#	pushq $BUFFER_DATA		# location of buffer    $BUFFER_DATA is the element
+	leaq BUFFER_DATA(%rip), %r11
+	pushq %r11			# CHANGE 2
+	#pushq $BUFFER_DATA		# location of buffer
 	pushq %rax			# size of the buffer
 	call convert_to_upper
 	popq %rax			# get the size back
@@ -218,13 +212,11 @@ continue_read_loop:
 	movq $SYS_WRITE, %rax					# to %rdx, why not immediatly pop it to rdx?
 
 	#file to use
-	movq ST_FD_OUT(%rbp), %rdi  
+	movq ST_FD_OUT(%rbp), %rdi  # rbx -> rdi
 
 	#loction of the buffer
-	leaq BUFFER_DATA(%rip), %r10
-	movq %r10, %rsi
-#	movq $BUFFER_DATA, %rsi   # rcx -> rsi
-	syscall 
+	leaq BUFFER_DATA(%rip), %rsi   # rcx -> rsi            # CHANGE 3
+	syscall
 
 
 	#### CONTINUE THE LOOP ####
@@ -238,7 +230,7 @@ end_loop:
 
 	movq $SYS_CLOSE, %rax
 	movq ST_FD_OUT(%rbp), %rdi   # rbx -> rdi
-	syscall 
+	syscall
 
 	movq $SYS_CLOSE, %rax
 	movq ST_FD_IN(%rbp), %rdi    # rbx -> rdi
@@ -246,7 +238,7 @@ end_loop:
 
 	#### EXIT ####
 	movq $SYS_EXIT, %rax
-	movq $41, %rdi
+	movq $0, %rdi
 	syscall
 
 # PURPOSE:	This function acutally does the conversion to
