@@ -13,9 +13,10 @@ write_newline:
  movl %esp, %ebp
 
  movl $SYS_WRITE, %eax
- movl ST_FILEDES(%ebp), %ebx
- movl $newline, %ecx
- movl $1, %edx
+ movl ST_FILEDES(%ebp), %ebx           # I assume the function write_newline will
+ movl $newline, %ecx		       # be called with an argument and the pointer
+ movl $1, %edx                         # will be on the stack. Why 8 not 4? 
+				       # functionname?
  int $LINUX_SYSCALL
 
  movl %ebp, %esp

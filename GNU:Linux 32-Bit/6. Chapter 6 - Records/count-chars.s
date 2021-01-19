@@ -24,11 +24,11 @@ count_chars:
 movl $0, %ecx
 
 # Starting address of data
-movl ST_STRING_START_ADDRESS(%ebp), %edx
+movl ST_STRING_START_ADDRESS(%ebp), %edx       # edx holds the address
 
 count_loop_begin:
 # Grab the current character
-movb (%edx), %al
+movb (%edx), %al                               # al has now the element
 
 # Is it NULL?
 

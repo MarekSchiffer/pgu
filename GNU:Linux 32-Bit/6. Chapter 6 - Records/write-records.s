@@ -13,35 +13,35 @@
 # at the end of each field to fill it up
 
 record1:
- .ascii "Frederick\0"
+ .ascii "Frederick\0"                 # Frederick has 9 characters.
  .rept 31 #Padding to 40 bytes
  .byte 0
  .endr
 
- .ascii "Bartlett\0"
- .rept 31 #Padding to 40 bytes
+ .ascii "Bartlett\0"                  # Bartlett has 8 characters.
+ .rept 31 #Padding to 40 bytes        # Why is the padding the same?
  .byte 0
  .endr
 
- .ascii "4242 S Prairie\nTulsa, OK 55555\0"
- .rept 209 #Padding to 240 bytes
+ .ascii "4242 S Prairie\nTulsa, OK 55555\0"      # 29 characters + \n + \0
+ .rept 209 #Padding to 240 bytes                 $ 209+29+2=240
  .byte 0
  .endr
 
  .long 45
 
 record2:
- .ascii "Marilyn\0"
+ .ascii "Marilyn\0"		      # 7+1 (\0)
  .rept 32 #Padding to 40 bytes
  .byte 0
  .endr
 
- .ascii "Taylor\0"
+ .ascii "Taylor\0"                    #6+1
  .rept 33 #Padding to 40 bytes
  .byte 0
  .endr
 
- .ascii "2224 S Johannan St\nChicago, IL 12345\0"
+ .ascii "2224 S Johannan St\nChicago, IL 12345\0"  # 35+2
  .rept 203 #Padding to 240 bytes
  .byte 0
  .endr
@@ -49,17 +49,17 @@ record2:
  .long 29
 
 record3:
- .ascii "Derrick\0"
+ .ascii "Derrick\0"                   # 7+1 (\0)
  .rept 32 #Padding to 40 bytes
  .byte 0
  .endr
 
- .ascii "McIntire\0"
+ .ascii "McIntire\0"                  # 8+1 (\0)
  .rept 31 #Padding to 40 bytes
  .byte 0
  .endr
 
- .ascii "500 W Oakland\nSan Diego, CA 54321\0"
+ .ascii "500 W Oakland\nSan Diego, CA 54321\0"    # 32+2
  .rept 206 #Padding to 240 bytes
  .byte 0
  .endr
@@ -83,7 +83,7 @@ subl $4, %esp
 # Open the file
 movl $SYS_OPEN, %eax
 movl $file_name, %ebx
-movl $0101, %ecx           # This says to create if it 
+movl $0101, %ecx           # This says to create if it
 			   # doesn't exist, and open for
 			   # writing. 
 
@@ -98,7 +98,7 @@ movl %eax, ST_FILE_DESCRIPTOR(%ebp)
 # Write the first record
 pushl ST_FILE_DESCRIPTOR(%ebp)
 pushl $record1
-call write_record
+call write_record                      # In read-write.s, included via linker.
 addl $8, %esp
 
 # Write the second record

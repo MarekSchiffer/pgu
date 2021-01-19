@@ -12,7 +12,7 @@
 # STACK LOCAL VARIABLES
 
 .equ ST_READ_BUFFER, 8
-.equ ST_FILEDES, 12
+.equ ST_FILEDES, 12           # Stack File Descriptor
 
 .section .text
 .global read_record
@@ -22,7 +22,7 @@ read_record:
 pushl %ebp
 movl %esp, %ebp
 
-pushl %ebx
+pushl %ebx			# This is just in case, there is something in %ebx?
 movl ST_FILEDES(%ebp), %ebx
 movl ST_READ_BUFFER(%ebp), %ecx
 movl $RECORD_SIZE, %edx
