@@ -1,3 +1,6 @@
+# Changes linux64.s => macOS64.s
+#.type write_record, @function  removed
+
 # Changes 64-bit version:
 # linux32.s -> linux64.s
 # eXX => rXX
@@ -16,7 +19,7 @@
 #      %al  - current character
 #      %edx - current character address
 
-.type count_chars, @function
+#.type count_chars, @function
 .global count_chars
 
 # This is where our one parameter is on the stack

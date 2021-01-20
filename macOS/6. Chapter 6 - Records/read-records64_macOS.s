@@ -1,15 +1,28 @@
-.include "linux64.s"
+# Changes for macOS:
+# linux64.s => macOS64.s
+# .section .data => .data
+# #movq $file_name, %rdi => leaq file_name(%rip), %rdi
+# movq $0, %rsi	 => movq $0x000, %rsi
+# leaq record_buffer(%rip), %r11 && addq $RECORD_FIRSTNAME, %r11 && pushq %r11
+# pushq $record_buffer => leaq record_buffer(%rip), %r11 && pushq %r11
+# pushq $RECORD_FIRSTNAME + record_buffer => leaq record_buffer(%rip), %r11 
+#                  && addq $RECORD_FIRSTNAME, %r11 && pushq %r11
+# movq $RECORD_FIRSTNAME + record_buffer, %rsi => leaq record_buffer(%rip), %rsi 
+#       && addq $RECORD_FIRSTNAME, %rsi
+#
+# NOT changed, but file_name had to be before a a test wrtiting record1 before.
+
+.include "macOS64.s"
 .include "record-def.s"
 
-.section .data
+.data
 file_name:
  .ascii "OutputRecords.dat\0"
 
-.section .bss
+.bss
 .lcomm record_buffer, RECORD_SIZE         # RECORD_SIZE is definied in record-def.s
 
-
-.section .text
+.text
 # Main program
 .global _start
 
@@ -27,8 +40,8 @@ subq $16, %rsp
 
 # Open the file
 movq $SYS_OPEN, %rax
-movq $file_name, %rdi
-movq $0, %rsi		# This says to open read-only
+leaq file_name(%rip), %rdi
+movq $0x000, %rsi		# This says to open read-only
 movq $0666, %rdx
 syscall
 
@@ -44,7 +57,8 @@ movq $STDOUT, ST_OUTPUT_DESCRIPTOR(%rbp)
 
 record_read_loop:
  pushq ST_INPUT_DESCRIPTOR(%rbp)
- pushq $record_buffer
+ leaq record_buffer(%rip), %r11 
+ pushq %r11
  call read_record                 # This function is defined in read-write.s. Included
  addq $8, %rsp                    # via linker.
 
@@ -57,14 +71,17 @@ jne finished_reading
 
 # Otherwise, print out the first name but first we must know
 # it's size
-pushq $RECORD_FIRSTNAME + record_buffer    # $RECORD_FIRSTNAME ist the address,
+leaq record_buffer(%rip), %r11
+addq $RECORD_FIRSTNAME, %r11
+pushq %r11			           # $RECORD_FIRSTNAME ist the address,
 				           # record_buffer is the address to the buffer 
 call count_chars                           # This function is definied in count-chars.s
 addq $8, %rsp				   # included via linker
 movq %rax, %rdx
 movq ST_OUTPUT_DESCRIPTOR(%rbp), %rdi
 movq $SYS_WRITE, %rax
-movq $RECORD_FIRSTNAME + record_buffer, %rsi
+leaq record_buffer(%rip), %rsi
+addq $RECORD_FIRSTNAME, %rsi
 syscall
 
 pushq ST_OUTPUT_DESCRIPTOR(%rbp)

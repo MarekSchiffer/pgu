@@ -1,3 +1,7 @@
+# Changes linux64.s => macOS64.s
+# .section .text => .text
+#.type write_record, @function  removed
+
 # Changes 64-bit version:
 # linux32.s -> linux64.s
 # int $LINUX_SYSCALL => syscall
@@ -9,7 +13,7 @@
 # 
 
 .include "record-def.s"
-.include "linux64.s"
+.include "macOS64.s"
 
 # PURPOSE: This function reads a record from the file descriptor
 #
@@ -24,9 +28,9 @@
 .equ ST_READ_BUFFER, 16
 .equ ST_FILEDES, 24 
 
-.section .text
+.text
 .global read_record
-.type read_record, @function
+#.type read_record, @function
 
 read_record:
 pushq %rbp
