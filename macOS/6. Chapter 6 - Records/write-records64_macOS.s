@@ -33,13 +33,17 @@
 # specified. This is used in this program to add extra null characters
 # at the end of each field to fill it up
 
+# NOTE: The padding of the first two names was wrong. We have to count 
+#       the special characters \0, \n as 1 character. 
+#       The add-year function dosen't work with the padding in the book.
+
 record1:
- .ascii "Frederick\0"                 # Frederick has 9 characters.
- .rept 31 #Padding to 40 bytes
+ .ascii "Frederick\0"                 # Frederick has 9+1 (\0) characters.
+ .rept 30 #Padding to 40 bytes
  .byte 0
  .endr
 
- .ascii "Bartlett\0"                  # Bartlett has 8 characters.
+ .ascii "Bartlett\0"                  # Bartlett has 8+1 (\0) characters.
  .rept 31 #Padding to 40 bytes        # Why is the padding the same?
  .byte 0
  .endr
