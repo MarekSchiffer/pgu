@@ -1,36 +1,28 @@
 # Changes for macOS:
 # linux64.s => macOS64.s
-# .section .data => .data
+# Copied working add-year64_macOS parts here
+# movq $0, %rsi => movq $0x201, %rsi
+# .section .data/.text => .data/.text
+#
 # movq $input_file_name, %rdi => leaq input_file_name(%rip), %rdi
-# movq $0, %rsi	 => movq $0x000, %rsi
-# movq $output_file_name, %rdi => leaq output_file_name(%rip), %rdi
-# movq $0101, %rsi => movq $0x201, %rsi
-# pushq $record_buffer => leaq record_buffer(%rip), %r11 && pushq %r11
+# pushq $no_open_file_msg => leaq no_open_file_msg(%rip), %r11 &&  pushq %r11
+# pushq $no_open_file_code => leaq no_open_file_code(%rip), %r11 && pushq %r11
+# movq $0, %rsi => movq $0x000, %rsi
 #
-# incl record_buffer + RECORD_AGE => See # Increment the age (Explanation there)
+# From lldb, the file descriptors have always been greater than 3.
+# Not confirmed by any documentation.
+# cmpq $0, %rax => cmpq $3, %rax             
 
 
-# #movq $file_name, %rdi => leaq file_name(%rip), %rdi
-# leaq record_buffer(%rip), %r11 && addq $RECORD_FIRSTNAME, %r11 && pushq %r11
-# pushq $RECORD_FIRSTNAME + record_buffer => leaq record_buffer(%rip), %r11 
-#                  && addq $RECORD_FIRSTNAME, %r11 && pushq %r11
-# movq $RECORD_FIRSTNAME + record_buffer, %rsi => leaq record_buffer(%rip), %rsi 
-#       && addq $RECORD_FIRSTNAME, %rsi
-#
-# NOT changed, but file_name had to be before a a test wrtiting record1 before.
 
-# Changes 64-bit version:
-# linux32.s -> linux64.s
-# int $LINUX_SYSCALL => syscall
+# Changes for 64 Bit:
+# linux32.s => linux64.s
+# Copied 64 Bit version of add-year64.s
 # eXX => rXX
-# Stack number *2
-# addl, popl, pushl, movl => addq, popq, pushq, movq
-#
-# For syscalls: rbx => rdi & rcx => rsi
-# 
-
-.include "macOS64.s"
-.include "record-def.s"
+# movl, cmpl, pushl => movq, cmpq, pushq
+# Replace in open rbx => rdi & rcx => rsi
+.include "../6. Chapter 6 - Records/macOS64.s"
+.include "../6. Chapter 6 - Records/record-def.s"
 
 .data
 input_file_name:
@@ -54,7 +46,6 @@ _start:
  movq %rsp, %rbp
  subq $16, %rsp
 
-
 # Open file for reading
 movq $SYS_OPEN, %rax
 leaq input_file_name(%rip), %rdi
@@ -63,6 +54,31 @@ movq $0666, %rdx
 syscall
 
 movq %rax, ST_INPUT_DESCRIPTOR(%rbp)
+
+# This will test and see if %rax is negative. If it 
+# is not negative, it will jump to continue_precessing.
+# Otherwise it will handle the error conditionn that 
+# the negative number represents.
+cmpq $3, %rax                           # First file descriptor macOS returs was always 3 in lldb
+jge continue_processing                 # and we continue with the program
+
+# Send the error
+.data
+no_open_file_code:
+.ascii "0001: \0"
+no_open_file_msg:
+.ascii "Can't Open Input File\0"
+
+.text
+leaq no_open_file_msg(%rip), %r11
+pushq %r11
+#pushq $no_open_file_msg
+leaq no_open_file_code(%rip), %r11
+pushq %r11
+#pushq $no_open_file_code
+call error_exit
+
+continue_processing:
 
 # Open file for writing
 movq $SYS_OPEN, %rax
@@ -77,7 +93,6 @@ loop_begin:
  pushq ST_INPUT_DESCRIPTOR(%rbp)
  leaq record_buffer(%rip), %r11 
  pushq %r11
- #pushq $record_buffer
  call read_record
  addq $16, %rsp
 
@@ -95,7 +110,8 @@ movq (%r11), %r12                            # Next we take the element, the age
 incq  %r12                                   # in r12, so we can increment it.
 movq %r12, (%r11)                            # Now we move it back. Not into %r11, 
 					     # but the address of
-
+xorq %r11,%r11
+xorq %r12,%r12
 
 # Write the record out
 pushq ST_OUTPUT_DESCRIPTOR(%rbp)
