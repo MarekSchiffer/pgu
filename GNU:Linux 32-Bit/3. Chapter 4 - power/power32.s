@@ -87,10 +87,10 @@ power_loop_start:
 	je end_power
 	
 	movl -4(%ebp), %eax            # move base from the stack intro %eax
-	imull %ebx, %eax               # multiply base with base ans put result in %eax.
+	imull %ebx, %eax               # multiply base with base and put result in %eax.
 	movl %eax, -4(%ebp)            # put new result on the stack
 	decl %ecx		       # remove power by 1.
-jmp power_loop_start                   # keep going untill power is 1
+jmp power_loop_start                   # keep going until power is 1
 	cmpl $1, %ecx
 	je end_power
 	
