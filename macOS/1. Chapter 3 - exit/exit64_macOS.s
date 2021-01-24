@@ -39,6 +39,8 @@
 #	  as -arch x86_64 exit64_macOS.s -o exit64_macOS.o
 #
 #         For linking:
+#	  ld -static -e _start exit64_macOS.o -o exit64_macOS
+#	  Needed for Chapter 8:
 #         ld -macosx_version_min 11.0 -L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib -lSystem -e _start exit64_macOS.o -o exit64_macOS	
 
 #Input: none
