@@ -40,6 +40,7 @@ current_break:
 # Location of the "available" flag in the header
 .equ HDR_AVAIL_OFFSET, 0
 # Location of the size field in the header
+.equ HDR_SIZE_OFFSET, 4
 
 ######## CONSTANTS ########
 
@@ -67,7 +68,7 @@ current_break:
 .type allocate_init, @function
 
 allocate_init:
- pushl %esp			# Standard function stuff
+ pushl %ebp			# Standard function stuff
  movl %esp, %ebp
 
 # If the brk system call is called with 0 in %ebx, it returns
