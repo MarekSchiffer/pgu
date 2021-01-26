@@ -1,28 +1,22 @@
-# Changes for macOS:
-# linux64.s => macOS64.s
-# .section .data => .data
-# #movq $file_name, %rdi => leaq file_name(%rip), %rdi
-# movq $0, %rsi	 => movq $0x000, %rsi
-# leaq record_buffer(%rip), %r11 && addq $RECORD_FIRSTNAME, %r11 && pushq %r11
-# pushq $record_buffer => leaq record_buffer(%rip), %r11 && pushq %r11
-# pushq $RECORD_FIRSTNAME + record_buffer => leaq record_buffer(%rip), %r11 
-#                  && addq $RECORD_FIRSTNAME, %r11 && pushq %r11
-# movq $RECORD_FIRSTNAME + record_buffer, %rsi => leaq record_buffer(%rip), %rsi 
-#       && addq $RECORD_FIRSTNAME, %rsi
-#
-# NOT changed, but file_name had to be before a a test wrtiting record1 before.
+# Changes for 64-Bit:
+# We started from the 64-Bit version of read-records64.s
+# eXX => rXX
+# movl, add, push =>
+# %rcs => %rsi
 
-.include "macOS64.s"
-.include "record-def.s"
+.include "../6.\ Chapter\ 6\ -\ Records/linux64.s"
+.include "../6.\ Chapter\ 6\ -\ Records/record-def.s"
 
-.data
+.section .data
 file_name:
  .ascii "OutputRecords.dat\0"
 
-.bss
-.lcomm record_buffer, RECORD_SIZE         # RECORD_SIZE is definied in record-def.s
+# The memory allocator will return a pointer to the memory,
+# we cann use.
+record_buffer_ptr:
+ .quad 0
 
-.text
+.section .text
 # Main program
 .global _start
 
@@ -38,10 +32,21 @@ movq %rsp, %rbp
 # Allocate space to hold the file descriptors
 subq $16, %rsp
 
+# Use our memory allocator. At this point no memory heap_begin and
+# heap_current are both at the same point.
+call allocate_init 
+
+# We're now requesting memory and get back a pointer to the
+# address we can use.
+pushq $RECORD_SIZE
+call allocate
+movq %rax, record_buffer_ptr
+
+
 # Open the file
 movq $SYS_OPEN, %rax
-leaq file_name(%rip), %rdi
-movq $0x000, %rsi		# This says to open read-only
+movq $file_name, %rdi
+movq $0, %rsi		# This says to open read-only
 movq $0666, %rdx
 syscall
 
@@ -57,8 +62,7 @@ movq $STDOUT, ST_OUTPUT_DESCRIPTOR(%rbp)
 
 record_read_loop:
  pushq ST_INPUT_DESCRIPTOR(%rbp)
- leaq record_buffer(%rip), %r11 
- pushq %r11
+ pushq record_buffer_ptr
  call read_record                 # This function is defined in read-write.s. Included
  addq $8, %rsp                    # via linker.
 
@@ -71,16 +75,18 @@ jne finished_reading
 
 # Otherwise, print out the first name but first we must know
 # it's size
-leaq record_buffer(%rip), %r11
-addq $RECORD_FIRSTNAME, %r11
-pushq %r11			           # $RECORD_FIRSTNAME is the address,
-				           # record_buffer is the address to the buffer 
+ movq record_buffer_ptr, %rax	           # record_buffer_ptr is the address and 
+ addq $RECORD_FIRSTNAME, %rax	           # $RECORD_FIRSTNAME is the number 0 we add.
+
+pushq %rax
 call count_chars                           # This function is definied in count-chars.s
 addq $8, %rsp				   # included via linker
 movq %rax, %rdx
 movq ST_OUTPUT_DESCRIPTOR(%rbp), %rdi
 movq $SYS_WRITE, %rax
-leaq record_buffer(%rip), %rsi
+# We can only add in registers. We already did it on macOS.
+# We add the number of $RECORD_FIRSTNAME to the address.
+movq record_buffer_ptr, %rsi
 addq $RECORD_FIRSTNAME, %rsi
 syscall
 
@@ -91,6 +97,10 @@ addq $8, %rsp	                           # Included via linker
 jmp record_read_loop
 
 finished_reading:
+ # Here we deallocate (free) the memory we used by simply passing the pointer.
+ pushq record_buffer_ptr
+ call deallocate
+
  movq $SYS_EXIT, %rax
  movq $0, %rdi
  syscall

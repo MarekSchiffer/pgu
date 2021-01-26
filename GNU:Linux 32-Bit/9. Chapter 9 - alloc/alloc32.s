@@ -38,9 +38,11 @@ current_break:
 # Size of space for memory region header
 .equ HEADER_SIZE, 8
 # Location of the "available" flag in the header
-.equ HDR_AVAIL_OFFSET, 0
+.equ HDR_AVAIL_OFFSET, 0				# 0-4 bytes
 # Location of the size field in the header
-.equ HDR_SIZE_OFFSET, 4
+.equ HDR_SIZE_OFFSET, 4					# 4-8 bytes
+
+# HDR High-dynamic-ran... OHHHhh it means header...
 
 ######## CONSTANTS ########
 
@@ -84,11 +86,14 @@ incl %eax			# %eax now hat the last valid
 
 movl %eax, current_break	# store the current break
 
-movl %eax, heap_begin		# sore the current break as our
+movl %eax, heap_begin		# store the current break as our
 				# first address. This will
 				# cause the allocate function
 				# to get more memory from Linux
 				# the first time it is run.
+
+# At this point heap_begin and curent_break are both pointing to the
+# first non vaild memory address. The heap has therefore no space.
 
 movl %ebp, %esp			# exit the function
 popl %ebp
@@ -147,6 +152,9 @@ alloc_loop_begin:		 # here we iterate through each memory region
 
  cmpl %ebx, %eax		 # need more memory if these are equal
  je   move_break
+
+# Note: This condition is met the first time the function is called, due to
+# the allocate_init function.
 
 # grab the size of this memory
 movl HDR_SIZE_OFFSET(%eax), %edx

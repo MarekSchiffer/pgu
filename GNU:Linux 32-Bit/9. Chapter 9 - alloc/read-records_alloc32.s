@@ -5,6 +5,8 @@
 file_name:
  .ascii "OutputRecords.dat\0"
 
+# The memory allocator will return a pointer to the memory,
+# we cann use.
 record_buffer_ptr:
  .long 0
 
@@ -25,9 +27,12 @@ movl %esp, %ebp
 # Allocate space to hold the file descriptors
 subl $8, %esp
 
-# Use our memory allocator
-call allocate_init
+# Use our memory allocator. At this point no memory heap_begin and
+# heap_current are both at the same point.
+call allocate_init 
 
+# We're now requesting memory and get back a pointer to the
+# address we can use.
 pushl $RECORD_SIZE
 call allocate
 movl %eax, record_buffer_ptr
@@ -58,34 +63,37 @@ record_read_loop:
 # Returns the number of bytes read. If it isn't the same number
 # we requested, then it's either and end-of-file, or an error, so
 # we're quitting
-cmpl $RECORD_SIZE, %eax
-jne finished_reading
+ cmpl $RECORD_SIZE, %eax
+ jne finished_reading
 
 
 # Otherwise, print out the first name but first we must know
 # it's size
-movl record_buffer_ptr, %eax	           # $RECORD_FIRSTNAME ist the address,
-addl $RECORD_FIRSTNAME, %eax	           # record_buffer is the address to the buffer
-pushl %eax
-
-call count_chars                           # This function is definied in count-chars.s
-addl $4, %esp				   # included via linker
-movl %eax, %edx
-movl ST_OUTPUT_DESCRIPTOR(%ebp), %ebx
-movl $SYS_WRITE, %eax
-
-movl record_buffer_ptr, %ecx
-addl $RECORD_FIRSTNAME, %ecx
-
-int $LINUX_SYSCALL
-
-pushl ST_OUTPUT_DESCRIPTOR(%ebp)
-call write_newline			   # Defined in write-newline.s. 
-addl $4, %esp	                           # Included via linker
+ movl record_buffer_ptr, %eax	           # record_buffer_ptr is the address and 
+ addl $RECORD_FIRSTNAME, %eax	           # $RECORD_FIRSTNAME is the number 0 we add.
+ pushl %eax
+ 
+ call count_chars                          # This function is definied in count-chars.s
+ addl $4, %esp				   # included via linker
+ movl %eax, %edx
+ movl ST_OUTPUT_DESCRIPTOR(%ebp), %ebx
+ movl $SYS_WRITE, %eax
+ 
+ # We can only add in registers. We already did it on macOS.
+ # We add the number of $RECORD_FIRSTNAME to the address.
+ movl record_buffer_ptr, %ecx
+ addl $RECORD_FIRSTNAME, %ecx
+ 
+ int $LINUX_SYSCALL
+ 
+ pushl ST_OUTPUT_DESCRIPTOR(%ebp)
+ call write_newline			   # Defined in write-newline.s. 
+ addl $4, %esp	                           # Included via linker
 
 jmp record_read_loop
 
 finished_reading:
+ # Here we deallocate (free) the memory we used by simply passing the pointer.
  pushl record_buffer_ptr
  call deallocate
 
