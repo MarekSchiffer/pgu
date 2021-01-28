@@ -107,7 +107,7 @@ leaq record_buffer(%rip), %r11               # We get the address of the buffer 
 addq $RECORD_AGE, %r11                       # Now we add 320 to the address and get to the age
 					     # section of the buffer.
 movq (%r11), %r12                            # Next we take the element, the age, and put it 
-incq  %r12                                   # in r12, so we can increment it.
+incq %r12                                    # in r12, so we can increment it.
 movq %r12, (%r11)                            # Now we move it back. Not into %r11, 
 					     # but the address of
 xorq %r11,%r11

@@ -63,44 +63,7 @@
 # If a comparsion is made the %eflags register will have a bit set and the je, jle will use
 # these bits. It's exactly as in J. Clark Scott - But How Do it know?
 
-#data_items:
-# #.long 3,67,34,222,45,75,54,34,44,33,22,11,66,0
-# .long 3,1,56,4,11,23,44,22,222,33,33,56,64,8,15,0
-#
-#.text
-#
-#.global _start
-#
-#_start:
-#	leaq data_items(%rip), %rsi 
-#	movq $0, %rdi			        # Fill %rdi (loop counter) with 0.
-##	movl data_items(,%edi,4), %eax		# This is the and "Indexed Addressing Mode"
-#	movl (%rsi,%rdi,4), %eax
-#	movl %eax, %ebx				# The first value is the largest, move it to %ebx
-#
-##Note we still work with eax and ebx, not the full rax and rbx.
-#	
-#start_loop:
-#
-#	cmpl $0, %eax				# cmpl (compare long). Check if the current value is 0
-#	je loop_exit                            # if equal (je =^ jump equal) yes, jump to exit.
-#
-#	incq %rdi				# increase loop counter. 
-#	movl (%rsi,%rdi,4), %eax
-#	cmpl %ebx, %eax
-#	jle start_loop				# jle =^ jump less equal. If the next item is smaller than jump.
-#	
-#	movl %eax, %ebx				# If the next item is larger, change %ebx.
-#jmp start_loop					# Wash, rinse, repeat.
-#
-#loop_exit:					# Same as exit.s. %ebx will be the exit status and has to be 
-#	movq $0x2000001, %rax				# smaller than 255.
-#	movl %ebx, %edi				# For 64 Bit the syscal returns edi, therefore we move ebx to edi now	
-#	syscall
-#
-
 data_items:
-# .quad 3,1,56,4,11,23,44,22,33,33,56,64,8,15,0
  .quad 3,1,56,4,11,23,44,22,222,33,33,56,64,8,15,0
 
 .text
@@ -108,19 +71,11 @@ data_items:
 .global _start
 
 _start:
-#lea rsi, [data_items]
-	leaq data_items(%rip), %rsi    #rip can only be used as a base index
+	leaq data_items(%rip), %rsi             # rip can only be used as a base index
 	movq $0, %rdi			        # Fill %rdi (loop counter) with 0.
-#mov rax, [rsi + rdi*8]¬
-#	movq (%rsi), %rdi				# This gives back the first value
-#	movq $0x2000001, %rax				
-#	syscall
 
 	movq (%rsi,%rdi,8), %rax		# This is the and "Indexed Addressing Mode"
 	movq %rax, %rbx				# The first value is the largest, move it to %ebx
-	
-
-#Note we still work with eax and ebx, not the full rax and rbx.
 	
 start_loop:
 

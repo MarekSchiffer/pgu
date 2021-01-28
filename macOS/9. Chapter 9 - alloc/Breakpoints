@@ -1,0 +1,18 @@
+Breakpoint at start:
+br s -a 0000000100003ed2 
+
+Breakpoint after first sbrk call:
+br s -a 100003e16
+
+Breakpoint after sbrk in allocate:
+br s -a 0x100003e8d
+
+heap_begin:
+x/64xb 0000000100008011
+curren_break:
+
+record_buffer_ptr:
+x/64xb 0000000100008033
+
+Read real Heap: address can change:
+x/64xb 0x0000000100400001
