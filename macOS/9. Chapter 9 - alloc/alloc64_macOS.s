@@ -179,9 +179,9 @@ allocate:
  movq ST_MEM_SIZE(%rbp), %rdi    # %rdi will hold the size we are looking for
 				 # (which is the first and only parameter)
 
-movq heap_begin(%rip), %rax	 # %rax will hold the current search location
+ movq heap_begin(%rip), %rax	 # %rax will hold the current search location
 
-movq current_break(%rip), %rsi	 # %rsi will hold the current break
+ movq current_break(%rip), %rsi	 # %rsi will hold the current break
 
 
 alloc_loop_begin:		 # here we iterate through each memory region
@@ -193,7 +193,8 @@ alloc_loop_begin:		 # here we iterate through each memory region
 # the allocate_init function.
 
 # grab the size of this memory
-movq HDR_SIZE_OFFSET(%rax), %rdx
+movq HDR_SIZE_OFFSET(%rax), %rdx          # On the stack is now %rdi+HEADER size, which be pushed on he
+				          # stack in move_break
 
 # If the space is unavailable, go to the next one.
 cmpq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax)
@@ -208,15 +209,15 @@ next_location:
 # At this point %rax does already contain the HEADER_SIZE, therefore
 # we musn't add it here again.
 
-# addq $HEADER_SIZE, %rax	 # The total size of the memory region
- addq %rdx, %rax		 # is the sum of the size requested
-				 # (currently stored in %rdx), plus
-				 # another 8 bytes for the header
-				 # (4 for the AVAILABLE/UNAVAILABLE flag,
-				 # and 4 for the size of the region).
-				 # So, adding %rdx and $8 to %rax will
-				 # get the address of the next memory
-				 # region
+# addq $HEADER_SIZE, %rax	 # 
+ addq %rdx, %rax		 # We already changed %rdx
+				 # by the size of the header.
+				 # Therefore, we don't need 
+				 # to add it here.
+				 # We add %rdx and %rax and
+				 # get the address of the next
+				 # location.
+				 # 
 
 jmp alloc_loop_begin		 # go look at the next location
 
@@ -249,15 +250,15 @@ move_break:			# If we've made it here, that
 				# of the data, and %rsi holds its
 				# size.
 
-				# We need to increase %rdi to where
-				# we _want_ memory to end, wo we
-addq $HEADER_SIZE, %rdi		# add space for the headers
-				# structure
-addq %rdi, %rsi			# add space to the break for
-				# the data requested.
+				######### CHANGED ##########
+				# Here we change %rdi by 10
+				# for the header. We need to 
+addq $HEADER_SIZE, %rdi		# do this, because the value
+				# in %rdi will be requested.
+addq %rdi, %rsi			#
+				# In the original code, the 
+				# address was passed and changed.
 
-				# Now it's time to ask Linux
-				# for more memory
 
 pushq %rax			# save needed registers
 pushq %rsi
@@ -286,7 +287,8 @@ popq %rax
 # give it away
 movq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax)
 # Set the size of the memory
-movq %rdi, HDR_SIZE_OFFSET(%rax)
+movq %rdi, HDR_SIZE_OFFSET(%rax)		# Here we move the requested memory+HEADER on the stack
+						# This is different to the original code.
 
 # Move %rax to the actual start of usable memory.
 # %rax now holds the return value
