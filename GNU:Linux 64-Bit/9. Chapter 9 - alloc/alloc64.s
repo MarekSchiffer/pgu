@@ -153,9 +153,9 @@ allocate:
  movq ST_MEM_SIZE(%rbp), %rsi    # %rsi will hold the size we are looking for
 				 # (which is the first and only parameter)
 
-movq heap_begin, %rax		 # %rax will hold the current search location
+ movq heap_begin, %rax		 # %rax will hold the current search location
 
-movq current_break, %rdi	 # %rdi will hold the current break
+ movq current_break, %rdi	 # %rdi will hold the current break
 
 
 alloc_loop_begin:		 # here we iterate through each memory region

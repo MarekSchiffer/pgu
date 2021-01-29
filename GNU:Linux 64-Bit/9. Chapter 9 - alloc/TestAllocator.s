@@ -56,7 +56,8 @@ call allocate
 movq %rax, record_buffer_ptr5(%rip)
 
 
-movq $0x2000001, %rax
+#movq $0x2000001, %rax
+movq $60, %rax
 movq $23, %rdi
 syscall
 
