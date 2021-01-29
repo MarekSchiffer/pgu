@@ -204,7 +204,11 @@ jle  allocate_here		 # the size to the needed size. If it's
 				 # big enough, go to allocate_here
 
 next_location:
- addq $HEADER_SIZE, %rax	 # The total size of the memory region
+
+# At this point %rax does already contain the HEADER_SIZE, therefore
+# we musn't add it here again.
+
+# addq $HEADER_SIZE, %rax	 # The total size of the memory region
  addq %rdx, %rax		 # is the sum of the size requested
 				 # (currently stored in %rdx), plus
 				 # another 8 bytes for the header
