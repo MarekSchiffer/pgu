@@ -1,4 +1,5 @@
 .equ buffer_size, 500 // Must be on top
+
 .text
 .global _start
 _start:
@@ -34,8 +35,13 @@ read_loop:
    mov x16, #3
    svc #0x80
  
- mov x10, x0 // store length of file
- mov x1, #0  // Null terminator
+    mov x10, x0 // store length of file
+
+   adrp x1, buffer@page
+   add x1, x1, buffer@pageoff
+   stp x1, x10, [sp, -0x10]!
+   bl toUpper
+   add sp, sp, 0x10
 
 // Write File
    mov     x0, x12 
@@ -44,6 +50,7 @@ read_loop:
    mov x2, x10
    mov x16, #4
    svc #0x80
+
 
 cmp x10, #buffer_size
 b.eq read_loop
@@ -63,8 +70,33 @@ b.eq read_loop
   mov x0, #23
   svc #0x80
 
+toUpper:
+ stp x29, x30, [sp, 0x10]!
+ add x29, sp, #0
+
+ ldr x3, [x29, -0x10]   // Buffer
+ ldr x4, [x29, -0x08]   // Buffer length
+
+loop:
+ ldrb w5, [x3]
+ cmp w5, #'z'
+   b.gt next_byte
+ cmp w5, #'a'
+   b.lt next_byte
+ sub w5, w5, #('a'-'A')
+
+next_byte:
+ strb w5, [x3], #1
+ cmp w5, #0
+
+   b.ne loop
+
+ ldp x29, x30, [sp], 0x10 
+ ret
 
 .data
 inputfile:  .asciz "BobDylan.txt"
 outputfile: .asciz "out.txt"
 buffer: .fill buffer_size + 1, 1, 0
+
+
