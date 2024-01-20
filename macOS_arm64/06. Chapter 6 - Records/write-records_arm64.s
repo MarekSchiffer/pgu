@@ -2,7 +2,7 @@
 .data
 .equ sys_exit, 1
 .equ sys_close, 6
-.equ sys_write, 0x1cf
+.equ sys_open, 0x1cf
 
 .equ O_RWT, 0x201
 .equ P_RW, 0666
@@ -75,34 +75,32 @@ _start:
   add x1, x1, outputfile@pageoff
   mov x2, #O_RWT
   mov x3, #P_RW
-  mov x16, #sys_write
+  mov x16, #sys_open
   svc #0x80
 
-  str x0, [x29, 0x10]
+  str x0, [x29]
 
   adrp x11, record1@page
   add x11, x11, record1@pageoff
   stp x0, x11, [sp, -0x10]!
   bl write_record
-  sub sp, sp, 0x10    // To do: explain why sub instead of add.
 
-  ldr x0, [x29, 0x10]
+  ldr x0, [x29]
 
   adrp x11, record2@page
   add x11, x11, record2@pageoff
   stp x0, x11, [sp, -0x10]!
   bl write_record
-  sub sp, sp, 0x10
 
-  ldr x0, [x29, 0x10]
+  ldr x0, [x29]
 
   adrp x11, record3@page
   add x11, x11, record3@pageoff
   stp x0, x11, [sp, -0x10]!
   bl write_record
-  add sp, sp, 0x10
+//  add sp, sp, 0x10
 
-  ldr x0, [x29, 0x10]
+  ldr x0, [x29]
 
 // Close File
   mov x16, #sys_close
