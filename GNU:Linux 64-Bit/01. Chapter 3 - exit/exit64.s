@@ -8,34 +8,9 @@
 #                                                                              #
 ################################################################################
 
-
-#	#########################################################################
-#	# rax: 64-Bit                   #########################################
-#	#                               # eax: 32-Bit    ########################
-#	#                               #                # ax:     ##############
-#	#                               #                # 16-Bit  #ah: #al: ####
-#	#                               #                #         #    #    ####
-#	#                               #                #         ##############
-#	#                               #                ########################
-#	#                               #########################################
-#	#########################################################################
-
-# Changes to 32-Bit:
-# eXX Registers are 4 Byte or 32-Bit and cahnge to 8 Byte or 64 Bit rXX registers.
-# movq (move Quadword) is used for 64 Bit registers
-# Value 60 in %Aax is used for exit interupt
-# rdi (register destination index) holds the return status
-# syscall
-
-
 #Purpose: Simple program that exits and returns a
 #	  status code back to the Linux kernel
 #
-#         To assembly use
-#         as -64 exit64.s -o exit.o
-#
-#         For linking:
-#         ld exit.o -o exit
 
 #Input: none
 #
@@ -67,10 +42,13 @@
 #
 # .global means, the assembler shouldn't discard the symbol, but
 # leave it for the linker.
+
 .global _start
 
 # Notice the : _start: is a a "label". A label is a symbol with the colon
+
 _start:
+
 #	movl $1, %eax	    # $60 is direct adressing mode and loads
 	movq $60, %rax	    # the value 60 into register %rax
 			    # This is the linux kernel command
