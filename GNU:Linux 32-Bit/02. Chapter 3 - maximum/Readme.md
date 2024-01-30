@@ -4,7 +4,7 @@ number. Due to the limitation of the
 
 
 ### Behind the Curtain
-Behind the curtiain this chapter is about two things
+Behind the curtain this chapter is about two things
 - Branching
 - Addressing Modes
 
@@ -36,8 +36,11 @@ use the indirect addressing mode to get the value at the addres
 ```
 movq (%ecx), %ebx
 ```
-At this point the number 23 is in register %ebx as well.
-
+At this point the number 23 is in register %ebx as well. 
+This line has all the secrets regarding pointer. Move the
+address in ecx in the Memory Address Register, put
+the value at that address on the BUS and captures it in ebx.
+Et voila!
 ### Direct Addressing Mode
 We can achieve the same result with the "Direct Addressing Method:
 ```
@@ -52,7 +55,7 @@ Once we have the address in a register, we can use the base
 pointer addressing mode to add a constant to the address and
 hop forward in memory
 ```
-movq $data_items, %3cx
+movq $data_items, %ecx
 movq 8(%ecx), %ebx
 ```
 We now have the 6 in register %rbx.
