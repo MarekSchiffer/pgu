@@ -18,7 +18,9 @@ data_items: .long 23,6,17,46,52,69
 ```
   movl $11, %edx
 ```
-is called immediate Mode. The number 11 comes directly from the RAM slot we write it in. This is a direct consequence of the Von Neuman architecture. If we had the address of an array, like your data\_items, we can insert it immediately in a register
+is called immediate Mode. The number 11 comes directly from the RAM slot we write it in. This is a direct consequence of the Von Neuman architecture. 
+![alt text](./Screeshots/addressing32.png)
+If we had the address of an array, like your data\_items, we can insert it immediately in a register
 ```
 movl $0x804a000, %ecx
 ```
