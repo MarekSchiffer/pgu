@@ -22,7 +22,7 @@ data_items: .long 23,6,17,46,52,69
   movq $11, %rdx
 ```
 is called immediate Mode. The number 11 comes directly from the RAM slot we write it in. This is a direct consequence of the von Neumann architecture.
-![](https://github.com/MarekSchiffer/pgu/blob/main/GNU%3ALinux%2032-Bit/02.%20Chapter%203%20-%20maximum/Screenshots/Addressing32.png)
+![](https://github.com/MarekSchiffer/pgu/blob/main/macOS_x86/02.%20Chapter%203%20-%20maximum/Screenshots/Addressing_macOS.png)
 * Inserting the address directly into the register *
 If we had the address of an array, like your data\_items, we can insert it immediately in a register
 ```
@@ -40,7 +40,7 @@ address in ecx in the Memory Address Register, put
 tbe value at that address on the BUS and captures it in edx.
 Et voila!
 ## IP-Relatvie Addressing Mode
-![](./Screenshots/RIP-Relative.png)
+![](https://github.com/MarekSchiffer/pgu/blob/main/macOS_x86/02.%20Chapter%203%20-%20maximum/Screenshots/RIP-Relative_macOS.png)
 * data\_itmes(%rip) gets replaced by 15(%rip). We can check, that 0xff1+0x15 is 
 indeed 0x1000 *
 Under macOS Direct Addressing Mode is not supported anymore. Instead
