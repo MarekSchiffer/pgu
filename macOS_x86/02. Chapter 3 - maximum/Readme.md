@@ -41,8 +41,7 @@ tbe value at that address on the BUS and captures it in edx.
 Et voila!
 ## IP-Relatvie Addressing Mode
 ![](https://github.com/MarekSchiffer/pgu/blob/main/macOS_x86/02.%20Chapter%203%20-%20maximum/Screenshots/RIP-Relative_macOS.png)
-* data\_itmes(%rip) gets replaced by 15(%rip). We can check, that 0xff1+0x15 is 
-indeed 0x1000 *
+* data\_itmes(%rip) gets replaced by 15(%rip). We can check, that 0xff1+0x15 is indeed 0x1000 *
 Under macOS Direct Addressing Mode is not supported anymore. Instead
 IP-Relative Addressing Mode is used.
 ```
@@ -53,48 +52,42 @@ lea stand for "Load Effective Address". \
 
 In IP-Relative Addressing Mode, the address is calculated by the relative
 offset to the instruction pointer (ip). This is entirely different from
-the Absolute Addressing Mode. Here the prefix data\_items, will be calculated to the difference or offset to the address of data\_items.
+the Absolute Addressing Mode. Here the prefix data\_items, will be calculated
+ to the difference or offset to the address of data\_items. See (Figure 2).  \
 
-
+We can also move the item directly into the register with
+```
+movq data_items(%rip), %rdx
+```
+This gives us again the value 23 in register rdx.
 ## Base Pointer Addressing Mode
 Once we have the address in a register, we can use the base
 pointer addressing mode to add a constant to the address and
 hop forward in memory
 ```
-movq $data_items, %ecx
-movq 4(%ecx), %edx
+leaq data_items(%rip), %rcx
+movq 8(%rcx), %rdx
 ```
-We now have the 6 in register ebx. Notice that the 4 gets "pulled in" the 
-parenthesis. Symbolically the expression gets evaluated to (%ecx+4) and the
-Indirect Addressing Mode gives back the value.
-
+We now have the 6 in register rdx. Notice that the 8 gets "pulled in" the 
+parenthesis. Symbolically the expression gets evaluated to (%rcx+8) and the Indirect Addressing Mode gives back the value.
 ## Indexed Addressing Mode
 Additionally to the prefix offset, we can add a counting register with a multiplier:
 ```
-movq $data_items, %ecx
-movq $3, %edi
-movq (%ecx,%edi,4), %edx
+leaq data_items(%rip), %rcx
+movq $3, %rdi
+movq (%rcx,%rdi,8), %rdx
 ```
-This moves the 46 in %edx. Additionally, we can use the pre offset:
+This moves the 46 in %rdx. (%rcx+3\*8). 
+Additionally, we can use the pre offset:
 ```
-movl $data_items, %ecx
-movl $3, %edi
-movl 4(%ecx,%edi,4), %ebx
+leaq data_items(%rip), %rcx
+movq $3, %rdi
+movq 8(%rcx,%rdi,4), %rdx
 ```
-To reach the 52. Finally we can use data\_items similarly:
-```
-movl $4, %edx
-movl data_items(%edx,%edi,4), %ebx
-```
-Which again moves the 52 in register ebx
-This notation sucks! 
-data\_items is outside of the parenthesis and gets pulled in, like in the
-Base Pointer Addressing Mode. The expression symbolically evaluates to
-(data_items + %edx + 4*%edi).  
-
+To reach the 52.
 # Branching
 The second introduction in this chapter is branching. The opcode cmp sets
-the %eflags register and according to the result the branch is made.
+the %rflags register and according to the result the branch is made.
 The first branch is equivalent to a while loop and the second to an if statement
 
 
