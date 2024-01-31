@@ -1,9 +1,9 @@
-### About
+# About
 This chapter uses the output to implement a linear search over a list of
 number. Due to the limitation of the 
 
 
-### Behind the Curtain
+## Behind the Curtain
 Behind the curtain this chapter is about two things
 - Branching
 - Addressing Modes
@@ -14,7 +14,7 @@ Assume we have the following array, like in maximum
 ```
 data_items: .long 23,6,17,46,52,69
 ```
-### Immediate Addressing Mode
+## Immediate Addressing Mode
 ```
   movl $11, %edx
 ```
@@ -29,7 +29,7 @@ That is the same as writing
 movl $data_items, %ecx
 ```
 We notice the dollar sign $.
-### Indirect Addressing Mode
+## Indirect Addressing Mode
 Now, that we have the address in register ecx, we can
 use the Indirect Addressing Mode to get the value at the address
 ```
@@ -40,7 +40,7 @@ This line has all the secrets regarding pointer. Move the
 address in ecx in the Memory Address Register, put
 tbe value at that address on the BUS and captures it in edx.
 Et voila!
-### Direct Addressing Mode
+## Direct Addressing Mode
 We can achieve the same result with the "Direct Addressing Method:
 ```
  movl data_items, %edx
@@ -49,7 +49,7 @@ This moves the value 23 in edx as well.
 We notice the lack of a $ sign. If mov gets an address,
 the value from that address will be moved in the register
 directly.
-### Base Pointer Addressing Mode
+## Base Pointer Addressing Mode
 Once we have the address in a register, we can use the base
 pointer addressing mode to add a constant to the address and
 hop forward in memory
@@ -58,7 +58,7 @@ movq $data_items, %ecx
 movq 4(%ecx), %edx
 ```
 We now have the 6 in register ebx
-### Indexed Addressing Mode
+## Indexed Addressing Mode
 Additionally to the prefix offset, we can add a counting register with a multiplier:
 ```
 movq $data_items, %ecx
