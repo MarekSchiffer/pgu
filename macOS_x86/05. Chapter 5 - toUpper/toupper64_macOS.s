@@ -89,7 +89,6 @@
 .text
 
 #STACK Positions					# Remeber, these are just constants.
-<<<<<<< HEAD
 .equ ST_SIZE_RESERVE, 16 #32				# We'll reserve 16 bytes on the stack.
 .equ ST_FD_IN, -8        #-16					# 0 to -8 for file descritor of the Inputfile
 .equ ST_FD_OUT, -16      #-32					# -8 to -16 for file descritor of the Outputfile
@@ -97,15 +96,6 @@
 .equ ST_ARGV_0, 8        # 32	  # Name of program	# int* - 8 bytes
 .equ ST_ARGV_1, 16       # 40     # Input file name	# char* - 8 bytes
 .equ ST_ARGV_2, 24       # 48     # Output file name
-=======
-.equ ST_SIZE_RESERVE, 32				# We'll reserve 16 bytes on the stack.
-.equ ST_FD_IN, -16					# 0 to -8 for file descritor of the Inputfile
-.equ ST_FD_OUT, -32					# -8 to -16 for file descritor of the Outputfile
-.equ ST_ARGC, 0         # 24    # Number of arguments	# C convention main(int argc, char *argv[])
-.equ ST_ARGV_0, 8       # 32	# Name of program	# int* - 8 bytes
-.equ ST_ARGV_1, 16      # 40     # Input file name	# char* - 8 bytes
-.equ ST_ARGV_2, 24      # 48     # Output file name
->>>>>>> 0232812 (Updated stack to new alignment)
 
 # Linux puts the pointers to the command line arguments automaically on the stack.
 # Remember in reverse order. The number of arguments is stored in %(rsp)
