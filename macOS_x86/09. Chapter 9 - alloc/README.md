@@ -1,20 +1,21 @@
 The syscall brk does not exist on macOS anymore, as can 
 be seen from syscall.master, which reads
-  
+```
 69 AUE_NULLALL{ int nosys(void); }   { old sbrk }  
-  
-We therefore have to revert to _sbrk from libc.  
-Although _brk exists, it doesn't have the same behaviour as the
+```
+We therefore have to revert to `_sbrk from libc.` 
+
+Although `_brk` exists, it doesn't have the same behaviour as the
 syscall under Linux and only returns 0xffffffffffffffff
 
-_sbrk has a slightly different functionality than brk.
 
-calling _sbrk with 0 in %rdi still gives us back the
+`_sbrk` has a slightly different functionality than brk.
+calling `_sbrk` with 0 in %rdi still gives us back the
 break_begin. 
 
 However, instead of passing the address  of where we want the new
 break to be to brk,  
-we have to pass the increment to _sbrk.  
+we have to pass the increment to `_sbrk`.  
   
 This leads to two changes:  
 1.) We have to have the increment in %rdi and not the address.  

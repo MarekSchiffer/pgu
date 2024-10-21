@@ -12,7 +12,7 @@
 # int $SYS_LINUX => syscall
 # movl => movq
 
-.include "../6. Chapter 6 - Records/macOS64.s"
+.include "../06. Chapter 6 - Records/macOS64.s"
 
 .data
 helloworld:

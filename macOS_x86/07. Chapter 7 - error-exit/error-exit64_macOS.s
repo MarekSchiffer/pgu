@@ -11,7 +11,7 @@
 # For syscalls, rbx=>rdi & rcx=rsi
 
 #.include "../6.\ Chapter\ 6\ -\ Records/macOS64.s"
-.include "../6. Chapter 6 - Records/macOS64.s"
+.include "../06. Chapter 6 - Records/macOS64.s"
 .equ ST_ERROR_CODE, 16
 .equ ST_ERROR_MSG, 24
 .global error_exit

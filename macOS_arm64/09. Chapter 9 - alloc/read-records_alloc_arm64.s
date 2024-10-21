@@ -1,9 +1,9 @@
-.include "macOS64.s"
-.include "record-def.s"
+.include "../06. Chapter 6 - Records/macOS64.s"
+.include "../06. Chapter 6 - Records/record-def.s"
 
 .text
-.global _start1
-_start1:
+.global _start
+_start:
   mov x29, sp
   sub sp, sp, #0x10
   

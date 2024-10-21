@@ -10,6 +10,12 @@
 #Purpose: Simple program that exits and returns a
 #	  status code back to the Linux kernel
 #
+#
+#         To assembly use
+#         as -32 exit32.s -o exit32.o
+#
+#         For linking:
+#         ld -m elf_i386 exit32.o -o exit32
 
 #Input: none
 #

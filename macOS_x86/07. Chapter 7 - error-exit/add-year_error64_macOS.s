@@ -21,8 +21,8 @@
 # eXX => rXX
 # movl, cmpl, pushl => movq, cmpq, pushq
 # Replace in open rbx => rdi & rcx => rsi
-.include "../6. Chapter 6 - Records/macOS64.s"
-.include "../6. Chapter 6 - Records/record-def.s"
+.include "../06. Chapter 6 - Records/macOS64.s"
+.include "../06. Chapter 6 - Records/record-def.s"
 
 .data
 input_file_name:

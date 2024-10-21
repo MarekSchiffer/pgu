@@ -5,8 +5,8 @@
 .equ st_out_des, -32
 
 .text
-.global _start2
-_start2:
+.global _start
+_start:
   mov x29, sp
   sub sp, sp, #0x10
 

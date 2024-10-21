@@ -3,8 +3,8 @@
 .equ helloworld_len, helloworld_end - helloworld
 
 .text
-.global _start2
-_start2:
+.global _start
+_start:
 
    mov x0, #stdout
    adrp x1, helloworld@page

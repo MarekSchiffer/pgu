@@ -72,7 +72,9 @@ jne finished_reading
 # Otherwise, print out the first name but first we must know
 # it's size
 leaq record_buffer(%rip), %r11
-addq $RECORD_FIRSTNAME, %r11
+//addq $RECORD_FIRSTNAME, %r11
+addq $RECORD_LASTNAME, %r11
+//addq $RECORD_ADDRESS, %r11
 pushq %r11			           # $RECORD_FIRSTNAME is the address,
 				           # record_buffer is the address to the buffer 
 call count_chars                           # This function is definied in count-chars.s
@@ -81,7 +83,9 @@ movq %rax, %rdx
 movq ST_OUTPUT_DESCRIPTOR(%rbp), %rdi
 movq $SYS_WRITE, %rax
 leaq record_buffer(%rip), %rsi
-addq $RECORD_FIRSTNAME, %rsi
+//addq $RECORD_FIRSTNAME, %rsi
+addq $RECORD_LASTNAME, %rsi
+//addq $RECORD_ADDRESS, %rsi
 syscall
 
 pushq ST_OUTPUT_DESCRIPTOR(%rbp)

@@ -51,8 +51,8 @@ _start:                        # 01
 #.type factorial, @function    # 09
 
 factorial:                     # 10	
-	pushq %rbp             # 11         # Push ebp onto the stack
-	movq %rsp, %rbp        # 12         # and copy esp to ebp
+	pushq %rbp             # 11         # Push rbp onto the stack
+	movq %rsp, %rbp        # 12         # and copy rep to rbp
 	movq 16(%rbp), %rax    # 13         # get the value into eax. 8, because of the return address.
 
 	cmpq $1, %rax          # 14         # check for recusion anchor

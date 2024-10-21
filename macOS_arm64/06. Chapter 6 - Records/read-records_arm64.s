@@ -1,8 +1,8 @@
 .include "macOS64.s"
 .include "record-def.s"
 
-.global _start1
-_start1:
+.global _start
+_start:
   mov x29, sp
   sub sp, sp, #0x10
 
