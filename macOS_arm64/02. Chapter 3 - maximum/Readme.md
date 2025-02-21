@@ -118,7 +118,7 @@ adr x1, data_items
 ldr x0, [x1]
 ```
 adr is a 6Bit opcode (5Bit + sf), uses one Register (5 Bit) and 21 Bits to
-load the address. 2^21/1024 = 2048 = 2 MiB or 2MB for non nerds. 
+load the address. $2^21/1024 = 2048 = 2 MiB$ or 2MB for non nerds. 
 adr can therefore reach any address in +/- 1MB of the program counter.
 The linker will then replace the data_items with the address as an immediate value.
 ### Indirect Addressing Mode (Memory Pages)
@@ -141,7 +141,7 @@ than adr?
 First, it truncates the last 3 Bytes (12 Bit) to get to an even page number. For example,
 if the pc is pc = 0x0000000100003f50 it will zero out the last 12 Bits to pc = 0x0000000100003000.
 Therefore all instructions with a pc within 4096 Bits (512 Bytes) will give the same address. The 21 Bits are still used to calculate an address but now the 3 Bits are used to space out the target address. i.e
-4096 * 2^21 = 2^12 * 2^21. To get this in GiB, we get 2^33/2^30 = 8. Making addresses in the 
+$4096 * 2^21 = 2^12 * 2^21$. To get this in GiB, we get $2^33/2^30 = 8$. Making addresses in the 
 range of +/- 4GB accessible. However, not every address since the 4096 were arbitrarily cut short. 
 In practice this means from every given point in the program code the linker you can only access labels 
 in chunks of 512 Bytes. For example if the value would be 1 it would evaluate to 1* 4096 or 0x1000, 
@@ -202,9 +202,9 @@ adrp x1, data_items@page
 mov x2, #17
 ldr x0, [x1, x2, lsl #3]
 ```
-The options for ldr with a 64 Bit register are 0 default and 3. That's it. 3 here means 2^3
+The options for ldr with a 64 Bit register are 0 default and 3. That's it. 3 here means $2^3$
 Why not simply #8? Nobody knows! Symbolically the expression evaluates to
-[ 0x100004000 + (0x11 * 0x8 )] = [ 0x100004000 + 0x88] = [ 0x100004088] the parentheses
+`[ 0x100004000 + (0x11 * 0x8 )] = [ 0x100004000 + 0x88] = [ 0x100004088]` the parentheses
 would now dereference the address and load the value into x0.
 ###  Word, Halfword, Byte, Heh?
 The following  
@@ -218,7 +218,7 @@ mov x2, #17
 ldr w0, [x1, x2, lsl #2]
 ```
 Note, only by using the 32Bit registers the opcode will change and we can use lsl #2. 
-this will evaluate to 2^2 = 4 and we get again symbolically
+this will evaluate to $2^2 = 4$ and we get again symbolically
 [ 0x100004000 + (0x11 * 0x4 )] = [ 0x100004044] and we would get the value at that address.
 Note, the array hasn't changed. We're just going to the starting address in memory and instead of hopping forward in 8 byte steps, we do it in 4 Byte steps.  In C the equivalent would be
 ```
@@ -231,20 +231,21 @@ adrp x1, data_items@page
 mov x2, #17
 ldrh w0, [x1, x2, lsl #1]
 ```
-#1 means again 2^1. Otherwise, same spiel as before   [ 0x100004000 + (0x11 * 0x2 )]   = [ 0x100004022] . Finally,  we have the pure byte.
+#1 means again $2^1$. Otherwise, same spiel as before `[ 0x100004000 + (0x11 * 0x2 )]   = [ 0x100004022]`. 
+Finally,  we have the pure byte.
 ```
 adrp x1, data_items@page
 mov x2, #17
 ldrb w0, [x1, x2, lsl #0]
 ```
-Here the lsl #0 can be omitted and normally will. As before it means 2^0 = 1.
+Here the lsl #0 can be omitted and normally will. As before it means $2^0 = 1$.
 This time we hope forward in memory in bytes 
-[ 0x100004000 + (0x11 * 0x1 )]   = [ 0x100004011] . 
+`[ 0x100004000 + (0x11 * 0x1 )]   = [ 0x100004011]` . 
 [^1]: It's actually a good exercise (after Chapter 3 and maybe 8) to
 implement
 ```
-void *lsearch(void *baseAddr, int *elmSize, int n, int (*cmp)(void*,void*));
+void *lsearch(void *baseAddr, void *elm,  int *elmSize, int n, int (*cmp)(void*,void*));
 ```
-to implement linear search for generics to be called from C.
+to implement linear search for generics to be called from C. Note to self, done!
 
 [^2] Pun intended, asshole! :)
