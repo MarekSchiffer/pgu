@@ -31,7 +31,7 @@ not mapped to real memory, we get the most comprehensive and accurate error
 message ever devised "Segmention fault". 
 
 From this point on we'll just say memory.
-![stack](pictures/x86_64_StackPush53PushRBP.jpg)
+<img src="./pictures/x86_64_StackPush53PushRBP.jpg" width="300"/>
 The memory for a program is roughly divided into 3 sections. The code section,
 .text where the program code lives and the data section, where
 the data resigns. By design the data section is again divided into
