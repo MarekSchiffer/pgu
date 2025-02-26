@@ -7,7 +7,7 @@ To explore the full stack behaviour.
 While the function itself is primitive, this chapter introduces 
 the concept of function calls in assembly, as well as stack management.
 
-In modern assembly code parameters are passed to subroutine via registers.
+In modern assembly code parameters are passed to subroutines via registers.
 This is much faster as access to memory is about 50-100 times slower than 
 accessing a register. In the past when computers had fewer registers, e.g.
 6502 has 3 general purpose registers, the stack was primarily used.
@@ -19,12 +19,11 @@ Using the stack to pass parameters needs a little more getting used to than
 passing by registers and in this chapter we will focus on that. The calling
 convention using the stack is also inevitable when dealing with recursive
 functions, as we'll do in the next chapter. 
-In Chapter 8, we'll call a factorial functions from C making making it
-necessary to use modern calling convention. We'll get into more detail
-there. 
-
-# The stack
-Every program on modern hardware thinks it owns all of memory. This little
+In Chapter 8, we'll call a factorial functions from C making it necessary 
+to use modern calling convention. We'll get into more detail there. 
+![Alt text](./x86_Stack.gif)
+# The Stack
+Every program on modern hardware "thinks" it owns all of memory. This little
 power function as well as Adobe Photoshop or Google Chrome. In reality
 they memory is obviously limited but the operating system handles that
 for us and creates a lookup table for what is called virtual memory.
@@ -68,26 +67,39 @@ The gist of the stack calling convention is this:
  - Finally, we use the ret instruction to return to the address. ret copies the address rsp 
    is pointing to into the IP. If you forget to pop rbp and rsp is still pointing at it. 
    ret will copy that value into rip and explore that address. 
+## The Stack ain't no Stack
+
+## Stack Frame
+You will often hear the term stack frame. The stack frame is basically the currently
+active scope of the function; starting at the base pointer and ending at the current
+stack pointer. All variables within the current stack frame are said to be in scope.
+Obviously that's kind of nonsense, as we just pulled down the variables from callers 
+stack frame and moved them into our registers. Like the stack, stack frame is software
+design choice, supported by the hardware than a concept required by the  hardware.
+
 ## Context insensitive Code
 I just want to mention that when we call the power function in this example, we immediately
 use the base and the exponent. If we're dealing with more complex code or were to write a compiler
-a very standard way to handle things is by creating what's called context insensitive code. 
-What it basically, means is, we would first make space on the local stack frame and immediately
-push every variable on the local stack frame. We than can break down every instruction into
-Load, ALU, Store. That becomes also very useful the moment you write bigger functions and are 
-running out of registers. Every compiler without optimizations, will translate the code to
-to context insensitive assembly. A striking example for that is a swap function. 
+a very standard way to handle things is to create what's called context insensitive code. 
+What it basically means is, we would first make space on the local stack frame and immediately
+store every variable on the local stack frame. We then can break down every instruction into
+Load, ALU, Store idiom. That becomes also very useful the moment you write bigger functions and are 
+running out of registers or just start to lose track. 
+Every compiler without optimizations, will translate the code to into context insensitive assembly
+int debugging mode or with optimizations turned off. After the context insensitive code is created
+the optimizer will then get rid of unnecessary operations. A simple but  striking example for that 
+is a generic swap function. 
 ## Modern calling convention
 As mentioned before on modern systems the first 6 elements in x86_64 are passed
 by registers. Those six registers are, in order
-Argument | Register
+|Argument | Register|
 -------------------
-  1st    |  %rdi
-  2nd    |  %rsi
-  3rd    |  %rdx
-  4th    |  %rcx
-  5th    |  %r8
-  6th    |  %r9
+|  1st    |  %rdi   |
+|  2nd    |  %rsi   |
+|  3rd    |  %rdx   |
+|  4th    |  %rcx   |
+|  5th    |  %r8    |
+|  6th    |  %r9    |
 
 Please note, I didn't have a class of wine when composing this list. 
 Unlike the people creating it. On a more serious note, there are obviously legacy reasons 
@@ -97,9 +109,6 @@ We'll go into more detail in Chapter 8, when interacting with C.
 Every, register that passes a function argument is considered volatile from the
 callers perspective. Additionally, obviously rax as it will hold the return value
 and r10 and r11.
-
-
-
  
 
 
