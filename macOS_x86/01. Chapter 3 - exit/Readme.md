@@ -40,7 +40,9 @@ ld -static -e _start exit64_macOS.o -o exit64_macOS
 
 <div align=center>
   <img src="https://raw.githubusercontent.com/MarekSchiffer/pgu/main/macOS_x86/01.%20Chapter%203%20-%20exit/.assets/x86_64_Registers.png" alt="ra" width="600">
+<div align=center>
   <figcaption>Figure 1: Different parts of the rax registers on x86_64.</figcaption>
+</div>
    <br> <br>
 </div>
 
