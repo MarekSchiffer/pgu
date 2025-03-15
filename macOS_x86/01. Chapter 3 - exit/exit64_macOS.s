@@ -10,6 +10,6 @@
 .global _start
 _start:
   movq $0x2000001, %rax
-  movq $64, %rdi
+  movq $23, %rdi
   syscall
 

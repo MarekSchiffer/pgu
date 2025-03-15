@@ -39,7 +39,10 @@ and am running with `global` ever since. Both are identical.
 The error code, which is used as a communication tool to the outside
 up until Chapter 6 has to be in the intervall of [0,255] (1 Byte)
 
-![x86_64_Registers](https://github.com/user-attachments/assets/70827584-311b-4c33-a099-9e9c4fa1c449)
+<figure>
+  ![ra](./.assets/x86_64_Registers.png)
+  <figcaption>Different parts of the rax registers on x86_64.</figcaption>
+</figure>
 
 **Differences to the Linux 64-Bit version**
 The syscall is macOS specific. Other than that we 
