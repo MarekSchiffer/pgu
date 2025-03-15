@@ -1,22 +1,31 @@
-**Exit Program**
+## Exit Program
 The exit program is essential a "Hello, World!" program. In the sense that
 we insert a number into the register and use the Terminal to print (echo)
 out the number.
 
-This is indissmissable connected with the von Neumann architecture. The 
-program code, together with the number, is inserted into memory and then
-executed.
+This is undismissable connected with the von Neumann architecture. The
+program code, together with the number, is inserted into memory,
+then loaded into registers and finally executed.
 
 There is still this pesky "little" layer of abstraction called macOS or
-the operating system. Everything is controlled by the Kernel. 
-Ths API between userspace and Kernelspace is bridged by syscalls.
+the operating system. Everything is controlled by the Kernel.
+The API between userspace and Kernelspace is bridged by syscalls.
 
 In this particular case, we're asking the Kernel to quit the program
-and return a number into stderr. This is the basis for all upcoming
-programs. The most important part is to get it to run. i.e. assemble
+and return a number into stderr. The return value can then be seen
+with the Terminal command:
+```
+echo $?
+```
+
+The error code, which is used as a communication tool to the outside
+up until Chapter 6 has to be in the interval of [0,255] (1 Byte)
+
+This is the basis for all upcoming programs. 
+The most important part is to get it to run. i.e. assemble
 and link it.
 
-** How to assemble & link **
+## How to assemble & link
 To assemble the program:
 ```
 as -arch arm64 exit_arm64.s -o exit_arm64.o 
@@ -26,12 +35,21 @@ To then link the object file, to get an exectuable use:
 ```
 ld -e _start exit_arm64.o -o exit_arm64
 ```
-Please note, static linking is now depreciated. In the x86_64
-versions, we primarily linked the executables as static.
-Apple doesn't allow this anymore. At the beginning it was also necessary
-to link against lSystem and sysroot. As of now, this is no longer necessary.
+Please note, static linking is now depreciated. 
+In the x86_64 versions, we primarily linked the executables as static.
+Apple doesn't allow that anymore. At the beginning it was also necessary
+to link against lSystem and sysroot. As of now, this is no longer necessary, 
+but may change in the future again.
 
-**To Note**
+<div align=center>
+  <img src="https://raw.githubusercontent.com/MarekSchiffer/pgu/main/macOS_x86/01.%20Chapter%203%20-%20exit/.assets/x86_64_Registers.png" alt="ra" width="600">
+<div align=center>
+  <figcaption>Figure 1: Different parts of the rax registers on x86_64.</figcaption>
+</div>
+   <br> <br>
+</div>
+
+## Note
 `.global _start` declares the label `_start` as global, which
 means it can be seen by the linker outside of the file. There
 is nothing special about the name `_start` and it could as
