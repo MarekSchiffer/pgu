@@ -44,7 +44,7 @@ but may change in the future again.
 <div align=center>
   <img src="https://github.com/MarekSchiffer/pgu/blob/main/macOS_arm64/01.%20Chapter%203%20-%20exit/.assets/arm64_Registers.png" alt="ra" width="600">
 <div align=center>
-  <figcaption>Figure 1: Different parts of the rax registers on x86_64.</figcaption>
+  <figcaption>Figure 1: Different parts of the x0 registers on arm64.</figcaption>
 </div>
    <br> <br>
 </div>
@@ -54,12 +54,6 @@ but may change in the future again.
 means it can be seen by the linker outside of the file. There
 is nothing special about the name `_start` and it could as
 well be `hugo` 
-
-Subnote: Normally, it's written `globl` I thought that's a typo
-and am running with `global` ever since. Both are identical.
-
-The error code, which is used as a communication tool to the outside
-up until Chapter 6 has to be in the intervall of [0,255] (1 Byte)
 
 **Immediate diffrences**
 Before we go into more details about the differnces between x86_64
@@ -72,8 +66,9 @@ Comparing this with the 32-Bit GNU-Linux version, we can say;
 Welcome Back!
 
 
-**Differences to the x86_64 macOS version**
-There are quite a few differences between Arm64 and x86_64.
+#Differences to the x86_64 macOS version
+
+There are quite a few differences between arm64 and x86_64.
 The most striking one is, that all arm64 (AArch64) instructions
 have a constant length. That's significatn for decoding and the
 underlying implementation. For understanding the assembly code it's
@@ -84,25 +79,27 @@ Here, we'll  primarily focuse on the differences with practical implications.
 We'll also mention them as the become relevant in the program. Therefore
 differences in the calling convention will be mentioned with the 3rd program.
 
-**Number of Registers**
-Compared to x86_64, arm64 has 32 general purpose registers.
-The full 64-Bit registers have the prefix x. Therefore we 
-have x0-x32. The 32-Bit part of the registers have the prefix w.
-w0-w32.
+## Number of Registers
+arm64 has 32 general purpose registers. The full 64-Bit registers have the prefix x. 
+Therefore we have x0-x32. The 32-Bit part of the registers have the prefix w.
+w0-w32. See (Figure 1). There is no direct way to acccess the 16-Bit
+or 8-Bit parts. Of course it can be achived with a bitmask.
 
-**Number of Operands**
-While all the  main x86_64 instructions take one or two operands,
-most arm64 instructions take 3 operands. The instructions also
-reassamble the intel syntax instead of the AT&T syntax. Meaning
-we're now reading from right to left!
+## Number of Operands
+Most arm64 instructions take 3 operands. The instructions also
+reassamble the intel syntax instead of the AT&T syntax. 
+We're now operating from right to left, like in mathematics or C.
 ```
-add x1, x0, #23          vs      addq $23, %rax
+add x1, x0, #23         x1 = x0 + 23;
 ```
-As you can see the sign from the immediate value changed and we now
-have 3 operands. The add instruction reads, add 23 to what's in x0 and
-put the result in register x1. 
-
-**Aliases**
+## Instruction length
+The most significant difference on a fundamental part between arm64 and x86_64 is the fact that
+```
+100003f9c: d28002e0     mov  x0, #23
+100003fa0: d2800030     mov  x16, #1
+100003fa4: d4001001     svc  #0x80
+```
+## Aliases
 Just as a complete asside, arm64 uses a lot of aliases
 The mov instruction does not really exists for example it's an alias for
 ```
