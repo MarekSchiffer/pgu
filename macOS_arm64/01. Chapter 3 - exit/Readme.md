@@ -42,7 +42,7 @@ to link against lSystem and sysroot. As of now, this is no longer necessary,
 but may change in the future again.
 
 <div align=center>
-  <img src="https://raw.githubusercontent.com/MarekSchiffer/pgu/main/macOS_x86/01.%20Chapter%203%20-%20exit/.assets/x86_64_Registers.png" alt="ra" width="600">
+  <img src="https://github.com/MarekSchiffer/pgu/blob/main/macOS_arm64/01.%20Chapter%203%20-%20exit/.assets/arm64_Registers.png" alt="ra" width="600">
 <div align=center>
   <figcaption>Figure 1: Different parts of the rax registers on x86_64.</figcaption>
 </div>
