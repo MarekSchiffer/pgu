@@ -95,10 +95,11 @@ add x1, x0, #23         x1 = x0 + 23;
 ## Instruction length
 The most significant difference on a fundamental part between arm64 and x86_64 is the fact that
 ```
-100003f9c: d28002e0     mov  x0, #23
-100003fa0: d2800030     mov  x16, #1
-100003fa4: d4001001     svc  #0x80
+100003f9c: d28002e0     mov  x0, #23        100000ff0: 48 c7 c0 01 00 00 02   movq  $0x2000001, %rax 
+100003fa0: d2800030     mov  x16, #1        100000ff7: 48 c7 c7 17 00 00 00   movq  $23, %rdi
+100003fa4: d4001001     svc  #0x80          100000ffe: 0f 05 
 ```
+
 ## Aliases
 Just as a complete asside, arm64 uses a lot of aliases
 The mov instruction does not really exists for example it's an alias for
