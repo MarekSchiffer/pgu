@@ -5,11 +5,11 @@ out the number.
 
 This is indissmissable connected with the von Neumann architecture. The
 program code, together with the number, is inserted into memory,
-then loaded into registers and  and finally executed.
+then loaded into registers and finally executed.
 
 There is still this pesky "little" layer of abstraction called macOS or
 the operating system. Everything is controlled by the Kernel.
-Ths API between userspace and Kernelspace is bridged by syscalls.
+The API between userspace and Kernelspace is bridged by syscalls.
 
 In this particular case, we're asking the Kernel to quit the program
 and return a number into stderr. The return value can then be seen
@@ -40,9 +40,8 @@ ld -static -e _start exit64_macOS.o -o exit64_macOS
 
 <div align=center>
   <img src="https://raw.githubusercontent.com/MarekSchiffer/pgu/main/macOS_x86/01.%20Chapter%203%20-%20exit/.assets/x86_64_Registers.png" alt="ra" width="600">
-  <br>
   <figcaption>Figure 1: Different parts of the rax registers on x86_64.</figcaption>
-   <br>
+   <br> <br>
 </div>
 
 `.global _start` declares the label `_start` as global, which
@@ -52,15 +51,15 @@ well be `hugo`
 
 All 64-Bit assembly instructions have the the appendix q for quadword. Yes, I know!  Normally, the `word` size is equivalent to the size of the registers.  However, here a `word` is 32-Bit. Stripping it from all it's meaning. Therefore `.quad` not `.word`.
 
-The prefix *r* is the same. *r*ax means, the 64-Bit version of the a register.
-a register 8 Bit (intel 8080, 1974)  
+It's the same for the _r_ prefix. _r_ax means, the 64-Bit version of the a register.  
+a register 8-Bit (intel 8080, 1974)  
 ax - a eXtended 16-Bit (Intel 8086, 1978)  
 eax - EXtended 32-Bit (Intel 386, 1985)  
 rax - RXtended 64-Bit (AMD Opteron / Athlon 64, 2003)  
 Appologies to Matt Damon, but we ran out of letters!.
 What I meant to say was the *r* has no mnemonic meaning. It's just `r`.
 
-**Differences to the Linux 64-Bit version**
+#Differences to the Linux 64-Bit version
 The syscall is macOS x86_64 specific. Other than that we
 now have `.text` instead of `.section .text`
 
