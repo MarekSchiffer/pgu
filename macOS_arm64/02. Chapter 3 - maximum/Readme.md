@@ -1,4 +1,4 @@
-**Overview**
+## Overview**
 This program finds the maximum in an array of integers by the means
 of linear search[^1]. We'll load the first element into a register as
 the running maximum. Then update the address of the element and move along
@@ -35,9 +35,9 @@ Behind the curtain this chapter is about two things
 - Branching
 - Addressing Modes
 
-## Addressing Modes:
+# Addressing Modes:
 Addressing modes between arm64 and x86_64 are quite different.
-The most striking difference is the RIP Mode. In x86_64 we could
+The most striking difference is the RIP-Mode. In x86_64 we could
 calculate addresses directly by adding %rip to the label for either movq
 or leaq. This is not possible in arm64. To be clear, that's not to say arm64 doesn't
 use RIP. But it does so in a more concealed way, as we'll see.
@@ -69,27 +69,27 @@ is called immediate Mode.
 If we had the address of an array, like your data\_items, we _could_ insert it immediately in a register.
 Again, the 32 Bit limitation kicks in. The mov instruction is an alias for movz (move zero), which
 zeros out the registers and moves. However, it gets an 16 Bit immediate value #imm16 as well as
-a logical shift left (lsl). Again, opcode 8 Bit, size flag (sf) 1Bit, one Register 5 Bit, #imm16,
-well, 16Bit and lsl 2Bit. Therefore to insert an address into a register, we need mov and movk (move keep)
-movk has the same bits as movz and the same shift values 0,16,32,48.
+a logical shift left (lsl). Opcode 8 Bit, size flag (sf) 1-Bit, one Register 5-Bit, #imm16,
+well, 16-Bit and lsl 2-Bit. Therefore to insert an address into a register, we need mov and movk (move keep)
+movk has the same bits as movz and the same shift values 0, 16, 32 & 48.
 ```
 mov  x1, #0x4000
 movk x1, #0x0000, lsl #16        <-> .       movl $0x100004000, %rcx
 movk x1, #0x0001, lsl #32
 ```
-After this instruction the address 0x000100003f30 will be in register x1. In our
-example, that's the address of the list item. We now, again _*could*_ load the first
+After this instruction the address 0x000100004000 will be in register x1. In our
+example, that's the address of the list item. We now, again __could__ load the first
 item at that address into register x1 with
 ### Indirect Addressing Mode (Registers)
 ```
 ldr x0, [x1]                  <->           movq %(rax), %rdi
 ```
 Here, the address in x1 is dereferenced and the value at that address is loaded into x0. 
-Always keep in mind, may steps are necessary to fulfill this one assembly instruction.
-This will only work, if we run it in a debugger like lldb. The debugger will
-not use Address Space Layout Randomization (*ASLR*). Apple does; and since we're not
-allowed to statically link, the address of the list will be different
-every time you run the program. We can still use a trick to make it work, at least
+Always keep in mind, many steps are necessary to fulfill this one assembly instruction.
+This example  will only work, if we run it in a debugger like lldb. The debugger will
+not use Address Space Layout Randomization (ASLR). Apple does; and since we're not
+allowed to statically link, the address of the list will always be randomly shifted,
+every time the program is run. We can still use a trick to make it work, at least
 a little.
 ```
  adr x1, .
@@ -100,8 +100,9 @@ adr x1, pc is not allowed. adr is loading the address of . into x1.
 We talk about adr in a minute. For now we then manually, calculate the offset to the first
 element in the list by adding it to the address and finally we can access the 
 element with the indirect addressing mode. 
-This is essentially doing manually,  what position independent code will do using RIP-Relative.
-## IP-Relative Addressing Mode
+This is essentially doing manually, what position independent code will do using IP/PC-Relative.
+On arm64 it's called PC-Relative, because here it's called the program counter not Instruction Pointer.
+## PC-Relative Addressing Mode
 ### Literal load using PC-Relative ( Relative Addressing Mode movq(%rip) ) 
 Now, that we have the hacks out of the way, let's look how we could load the first element of the list into a register normally.
 ```
@@ -109,7 +110,7 @@ Now, that we have the hacks out of the way, let's look how we could load the fir
 ```
 will load the first element at the address of data_items into register x0.
 This is therefore called literal load using PC-Relative. The important part
-to remember is that the value will be loaded into x0, not the address. 
+to remember is that the value will be loaded into x0, not the address.
 ### Indirect Addressing Mode (Memory)
 If we don't want the first element but rather the address of data_items we can
 use the command adr
@@ -117,36 +118,35 @@ use the command adr
 adr x1, data_items
 ldr x0, [x1]
 ```
-adr is a 6Bit opcode (5Bit + sf), uses one Register (5 Bit) and 21 Bits to
-load the address. $2^21/1024 = 2048 = 2 MiB$ or 2MB for non nerds. 
+adr is a 6-Bit opcode (5-Bit + SF), uses one Register (5-Bit) and 21 Bits to
+load the address. $2^21/1024 = 2048 = 2 MiB$ or 2MB for non nerds.
 adr can therefore reach any address in +/- 1MB of the program counter.
 The linker will then replace the data_items with the address as an immediate value.
 ### Indirect Addressing Mode (Memory Pages)
 Up until now we had list in our .text section. That's necessary on macOS to
-use ldr or adr. However, normally we'll store data in the .data section.
-After all we can load  data in the .text section but not write to it.
+use ldr or adr. However the .text section is read only on macOS and most other operating systems. 
+Storing data takes place in the .data section.
 To access data in the .data section, we use the command adrp address pages.
 Memory on arm machines is separated into pages. Normally 4KB wide. To
 get the address into a register, we proceed as follows:
 ```
 adrp x1 data_items@gotpage
 ```
-Please note the part @gotpage is an assembler directive. On ach-O file systems, we'll often
+Please note the part @gotpage is an assembler directive. On MACH-O file systems, we'll often
 use @page instead.
-On a Linux system with an ELF files system an different assembler directive is needed.  
-
-adrp works differently than adr! As adr, adrp has a 6Bit opcode (5Bit + sf), uses
-one register (5 Bit) and has 21 Bits left to load an address. So what does it do differently 
+adrp works differently than adr. As adr, adrp has a 6-Bit opcode (5-Bit + SF), uses
+one register (5-Bit) and has 21 Bits left to load an address. So what does it do differently 
 than adr?
-First, it truncates the last 3 Bytes (12 Bit) to get to an even page number. For example,
-if the pc is pc = 0x0000000100003f50 it will zero out the last 12 Bits to pc = 0x0000000100003000.
-Therefore all instructions with a pc within 4096 Bits (512 Bytes) will give the same address. The 21 Bits are still used to calculate an address but now the 3 Bits are used to space out the target address. i.e
+First, it truncates the last 3 Bytes (12-Bit) to get to an even page number. For example,
+if pc = 0x0000000100003f50, it will zero out the last 12 Bits to pc = 0x0000000100003000.
+Therefore all instructions with a pc within 4096 Bits (512 Bytes) will give the same address. 
+The 21 Bits are still used to calculate an address but now the 3 Bits are used to space out the target address. i.e
 $4096 * 2^21 = 2^12 * 2^21$. To get this in GiB, we get $2^33/2^30 = 8$. Making addresses in the 
 range of +/- 4GB accessible. However, not every address since the 4096 were arbitrarily cut short. 
-In practice this means from every given point in the program code the linker you can only access labels 
+In practice this means from every given point in the program code, the linker can only access labels 
 in chunks of 512 Bytes. For example if the value would be 1 it would evaluate to 1* 4096 or 0x1000, 
 returning the address 0x0000000100004000. If it were 65537  we would arrive at 65537 * 4096 =  0x10001000 
-and at the address would be 0x0000000110004000   Everything within a page needs to be additionally added. 
+and at the address would be 0x0000000110004000 Everything within a page needs to be additionally added. 
 This can be achieved with the help of the assembler directive gotpageoff. On macOS and the Macho-O file system,
 we'll often use @pageoff instead. Again, both are not arm64 assembly instruction.
 ```
@@ -248,4 +248,4 @@ void *lsearch(void *baseAddr, void *elm,  int *elmSize, int n, int (*cmp)(void*,
 ```
 to implement linear search for generics to be called from C. Note to self, done!
 
-[^2] Pun intended, asshole! :)
+[^2]: Pun intended, asshole! :)
