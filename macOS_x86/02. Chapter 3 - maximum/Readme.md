@@ -167,9 +167,10 @@ that are executed in order.
 
 Depending on the opcode that was loaded in the Instruction Register there are now multiple additional
 steps that need to be done in order to execute that command. For example, loading another value from
-memory into a register takes again multiple steps. First, putting the address in the Memory Address Access Register[^2],
-The Address Bus Low and Address Bus High for the 6502 the Bus. Second, putting the value at that address on the Data Bus
-and third setting the desired register to store it. Forth, disabling the Memory address, so the Data Bus is free again.
+memory into a register takes again multiple steps. First, putting the address in the Memory Address Access 
+Register[^1]: The Address Bus Low and Address Bus High for the 6502 the Bus.[^bignote], Second, putting the 
+value at that address on the Data Bus and third setting the desired register to store it. Forth, disabling the 
+Memory address, so the Data Bus is free again.
 
 Those are four steps encoded in one instruction.
 
