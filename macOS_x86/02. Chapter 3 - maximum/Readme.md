@@ -21,8 +21,8 @@ data_items: .quad 23,6,17,46,52,69
 ```
   movq $11, %rdx
 ```
-is called immediate Mode. The number 11 comes directly from the RAM slot we write it in. 
-This is a direct consequence of the von Neumann architecture. 
+is called immediate Mode. The number 11 comes directly from the RAM slot we write it in.
+This is a direct consequence of the von Neumann architecture.
 
 ![](https://github.com/MarekSchiffer/pgu/blob/main/macOS_x86/02.%20Chapter%203%20-%20maximum/Screenshots/Addressing_macOS.png)
 * Inserting the address directly into the register * \
@@ -37,7 +37,7 @@ use the Indirect Addressing Mode to get the value at the address
 ```
 movq (%rcx), %rdx
 ```
-At this point the number 23 is in register %rdx as well. 
+At this point the number 23 is in register %rdx as well.
 This line has all the secrets regarding pointer. Move the
 address in ecx in the Memory Address Register, put
 tbe value at that address on the BUS and captures it in edx.
@@ -71,7 +71,7 @@ hop forward in memory
 leaq data_items(%rip), %rcx
 movq 8(%rcx), %rdx
 ```
-We now have the 6 in register rdx. Notice that the 8 gets "pulled in" the 
+We now have the 6 in register rdx. Notice that the 8 gets "pulled in" the
 parenthesis. Symbolically the expression gets evaluated to (%rcx+8) and the Indirect Addressing Mode gives back the value.
 ## Indexed Addressing Mode
 Additionally to the prefix offset, we can add a counting register with a multiplier:
@@ -80,7 +80,7 @@ leaq data_items(%rip), %rcx
 movq $3, %rdi
 movq (%rcx,%rdi,8), %rdx
 ```
-This moves the 46 in %rdx. (%rcx+3\*8). 
+This moves the 46 in %rdx. (%rcx+3\*8).
 Additionally, we can use the pre offset:
 ```
 leaq data_items(%rip), %rcx
@@ -92,5 +92,96 @@ To reach the 52.
 The second introduction in this chapter is branching. The opcode cmp sets
 the %rflags register and according to the result the branch is made.
 The first branch is equivalent to a while loop and the second to an if statement
+
+Branching is the ability for a computer to execute a control flow.
+There are two fundamental ingredients that make branching possible. Digital + Clock
+
+Branching is where the magic happens.
+
+Before the invention of digital technology, electronic devices were very rigid.
+Rigid in a sense they followed a strict control flow. They were also analog but
+that's not the point here. Every device before the takeover of the semiconductor
+followed a very rigid path of execution. Complex behaviour was carefully managed
+by signals and timing. Let's take an old CRT TV as an example. With the help of
+a magnetic field an electron beam can be moved by changing the magnetic field
+between two metal plates, which is directly proportional to the current. But getting
+MacGyver on the screen is a little more involved. In order for a picture to from in
+front of the screen, the signal has to go from left to right and the moment it reaches
+the end needs to reset to to the left. At the same time the magnetic field for the vertical
+direction has to notch the beam down one scanline. All of that was carefully orchestrated by signals.
+The AC signal was used to create two sawtooth signals of two different frequencies with the
+help of basically capacitors, to guide the beam. Each time the current dropped to zero,
+the beam would reset to the left and when the slower sawtooth signal dropped to zero the beam would
+reset to the top left. The video signal would then be superposed on the beam to change
+the intensity and form the picture. Turning from black (low intensity), over different shades
+of gray to white (full intensity). Additionally, the signal had a pulse to synchronize the
+horizontal and vertical beam with the automatic moving beam.
+
+
+The takeaway point here is that even though a device like a CRT TV seems to have something
+like a control flow "**If** the beam reaches the right side **then** reset it to the left"
+that is not the case. This magical feature needs digital technology.
+
+## Fetch Execution Cycle
+To understand a computer a crucial point is to understand the Fetch-Execution Cycle.
+Modern CPUs are complicated and use a lot of trickery and abstractions to bypass
+physical limitations. When I describe the Fetch-Exectuion Cycle I'll have a simpler
+chip in mind. Something like the 6502. The point is to understand how electronics
+can be used to create a conditional logic that depends on something that's in itself
+nothing but bytes in memory.
+
+The first critical component to understand is that every byte in memory can be accessed.
+Since the von Neumann architecture puts the opcode in memory, all the machine needs to
+know is where the current instruction is. That information is stored in the instruction
+pointer or better the instruction address register. Because that's all it is. One register
+that holds the binary number of the address in memory where the current instruction lives.
+This binary number must then be transferred to the Instruction Register. Note, these
+are two different registers. One holds the address to the current instruction and the other
+the instruction itself.
+
+Next the instruction in the Instruction Register needs to be decoded. As the opcode is nothing
+but a binary number, the first step is to separate the number into different wires. That's
+done by a multiplexer.
+
+The important part here is to understand that the opcode acts like a punch card.
+A punch card had holes in it. Depending on where the hole was, different connections
+were conductive or isolated and different circles would be closed or not be closed.
+
+By putting the binary number in the Instruction Register and splitting the number into different
+wires the same result is achieved. The different wires can now be connected in different ways
+to form a finite state machine for each step of the instruction encoded in the binary number.
+
+That doesn't mean the instruction is now executed in one go.
+
+Up to this point multiple steps were already executed. The memory address in the Instruction
+Address Register was used to to enable that memory memory address and put it on the Data Bus.
+Than the Instruction Register was opened or set to store that Instruction. If we imagine these
+discrete steps as button presses that need to happen in order, there is one crucial piece missing.
+The CPU clock. Contrary to the CRT TV example above the signal in a CPU is digital. A square wave
+on a fixed interval. That's very different than the analog signal mentioned above. The analog
+signal is based on timing. The digital signal is based on steps. If the clock speed is changed,
+the steps would still be executed in the exact same order of the steps, while an analog signal
+is based on timing and get get out of sync. The digital signal is like consecutive button presses,
+that are executed in order.
+
+
+Depending on the opcode that was loaded in the Instruction Register there are now multiple additional
+steps that need to be done in order to execute that command. For example, loading another value from
+memory into a register takes again multiple steps. First, putting the address in the Memory Address Access Register[^2],
+The Address Bus Low and Address Bus High for the 6502 the Bus. Second, putting the value at that address on the Data Bus
+and third setting the desired register to store it. Forth, disabling the Memory address, so the Data Bus is free again.
+
+Those are four steps encoded in one instruction.
+
+After the instruction is executed, The Fetch-Execution cycle isn't finished yet.
+The last part is to take the current address in the Instruction Address Register and add to the number to
+have the address of the next instruction in the Instruction Address Register. On a system with a fixed
+instruction length that's just adding a constant to the address 2 Byte for a 6502 4 Byte for arm64 and
+variable length for an x86.
+
+After the number has been added, the instruction pointer is updated and the cycle continues. Wash, rinse and repeat;
+Lift, eat, sleep, repeat. Whatever, you prefer.
+
+
 
 
