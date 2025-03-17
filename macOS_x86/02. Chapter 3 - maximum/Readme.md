@@ -89,12 +89,9 @@ movq 8(%rcx,%rdi,4), %rdx
 ```
 To reach the 52.
 # Branching
-The second introduction in this chapter is branching. The opcode cmp sets
-the %rflags register and according to the result the branch is made.
-The first branch is equivalent to a while loop and the second to an if statement
-
-Branching is the ability for a computer to execute a control flow.
-There are two fundamental ingredients that make branching possible. Digital + Clock
+Branching is the ability for a computer to execute instructions in memory one
+at a time and react to certain conditions and branch out into other parts of the
+program code.
 
 Branching is where the magic happens.
 
@@ -119,10 +116,12 @@ horizontal and vertical beam with the automatic moving beam.
 
 
 The takeaway point here is that even though a device like a CRT TV seems to have something
-like a control flow "**If** the beam reaches the right side **then** reset it to the left"
-that is not the case. This magical feature needs digital technology.
+like a control flow <br> 
+"**If** the beam reaches the right side **then** reset it to the left" 
+<br>
+That is not the case. This magical feature needs digital technology.
 
-## Fetch Execution Cycle
+## Fetch-Execution Cycle
 To understand a computer a crucial point is to understand the Fetch-Execution Cycle.
 Modern CPUs are complicated and use a lot of trickery and abstractions to bypass
 physical limitations. When I describe the Fetch-Exectuion Cycle I'll have a simpler
@@ -183,6 +182,28 @@ variable length for an x86.
 After the number has been added, the instruction pointer is updated and the cycle continues. Wash, rinse and repeat;
 Lift, eat, sleep, repeat. Whatever, you prefer.
 
+## Arbitrary Branching
+Now, that we have an idea how one instruction after the other can be executed. The next question is how can can
+a program run indefinitely, given that RAM is endless? In other words how are loops implemented on a hardware level? 
+
+Given the previous explanation, the answer is surprisingly simple. After all, all that needs to be done is updating
+the Instruction Address Register. In other words, the number given has to be loaded as an immediate from the opcode 
+into the Instruction Address Register. Like above about 4 steps need to be hardwired behind the scenes  to make that 
+happen. But after the Fetch-Execution Cycle is completed, the instruction pointer now points to the address give in memory
+and the branch is completed[^2].
+
+## Conditional Branching
+The final part of the puzzle is the conditional branch. if-else statements. If two registers are compared one
+value in a register can either be smaller or equal to the second register. If it's neither smaller nor equal, it's
+bigger. Based of off this comparison a flag is set. Another byte in a register. On x86_64 it's called the rflags
+on arm64 it's NZCV (**N**egative,**Z**ero,**C**arry,o**V**erflow) part of the cpsr register.
+Subtracting two binary numbers for example will either lead to a 1 or a 0 in the most significant bit within two's 
+complement. 1 means negative, 0 means positive. If the number is negative the hardwired state machine microcode 
+of the cmp operation will update the conditional flag register. The next opcode will then check if the condition 
+is meat or not and based upon that update the instruction pointer.
+
+
 
 
 [^1]: The Address Bus Low and Address Bus High for the 6502 the Bus.
+[^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch Execution-Cycle, the assembler woudld simply subtract that number an place it as the correct branch address.
