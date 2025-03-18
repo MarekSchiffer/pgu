@@ -48,6 +48,7 @@ It's important to point out that the stack being on top and growing down is
 purely a design decision. In a way memory was there first, and the stack came
 later. Nevertheless, this can lead to confusion and you should have a picture
 like (Figure 1) in mind. 
+
 ## Stack calling convention
 The gist of the stack calling convention is this:
  - We push the values in reverse order onto the stack. Using the 
