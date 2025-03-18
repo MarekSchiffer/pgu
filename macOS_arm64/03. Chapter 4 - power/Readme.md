@@ -103,7 +103,7 @@ is a generic swap function.
 ## Modern calling convention
 As mentioned before on modern systems the first 6 elements in x86_64 are passed
 by registers. Those six registers are, in order
-
+<div align="center">
 | Argument | Register |
 |----------|----------|
 | 1st      | %rdi     |
@@ -112,7 +112,7 @@ by registers. Those six registers are, in order
 | 4th      | %rcx     |
 | 5th      | %r8      |
 | 6th      | %r9      |
-
+</div>
 Please note, I didn't have a class of wine when composing this list. 
 Unlike the people creating it. On a more serious note, there are obviously legacy reasons 
 for this obscure convention. Wait, is that an empty bottle of Jack Daniels? 
