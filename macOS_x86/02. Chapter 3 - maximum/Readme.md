@@ -129,6 +129,8 @@ chip in mind. Something like the 6502. The point is to understand how electronic
 can be used to create a conditional logic that depends on something that's in itself
 nothing but bytes in memory.
 
+
+# 1. Fetch
 The first critical component to understand is that every byte in memory can be accessed.
 Since the von Neumann architecture puts the opcode in memory, all the machine needs to
 know is where the current instruction is. That information is stored in the instruction
@@ -138,6 +140,7 @@ This binary number must then be transferred to the Instruction Register. Note, t
 are two different registers. One holds the address to the current instruction and the other
 the instruction itself.
 
+# 2. Decode
 Next the instruction in the Instruction Register needs to be decoded. As the opcode is nothing
 but a binary number, the first step is to separate the number into different wires. That's
 done by a multiplexer.
@@ -152,6 +155,7 @@ to form a finite state machine for each step of the instruction encoded in the b
 
 That doesn't mean the instruction is now executed in one go.
 
+# 3. Execute
 Up to this point multiple steps were already executed. The memory address in the Instruction
 Address Register was used to to enable that memory memory address and put it on the Data Bus.
 Than the Instruction Register was opened or set to store that Instruction. If we imagine these
@@ -173,6 +177,7 @@ Memory address, so the Data Bus is free again.
 
 Those are four steps encoded in one instruction.
 
+# 4. Write-Back
 After the instruction is executed, The Fetch-Execution cycle isn't finished yet.
 The last part is to take the current address in the Instruction Address Register and add to the number to
 have the address of the next instruction in the Instruction Address Register. On a system with a fixed
@@ -184,7 +189,7 @@ Lift, eat, sleep, repeat. Whatever, you prefer.
 
 ## Arbitrary Branching
 Now, that we have an idea how one instruction after the other can be executed. The next question is how can can
-a program run indefinitely, given that RAM is endless? In other words how are loops implemented on a hardware level? 
+a program run indefinitely, given that RAM is finite? In other words how are loops implemented on a hardware level? 
 
 Given the previous explanation, the answer is surprisingly simple. After all, all that needs to be done is updating
 the Instruction Address Register. In other words, the number given has to be loaded as an immediate from the opcode 
@@ -200,7 +205,7 @@ on arm64 it's NZCV (**N**egative,**Z**ero,**C**arry,o**V**erflow) part of the cp
 Subtracting two binary numbers for example will either lead to a 1 or a 0 in the most significant bit within two's 
 complement. 1 means negative, 0 means positive. If the number is negative the hardwired state machine microcode 
 of the cmp operation will update the conditional flag register. The next opcode will then check if the condition 
-is meat or not and based upon that update the instruction pointer.
+is met or not and based upon that update the instruction pointer.
 
 
 
