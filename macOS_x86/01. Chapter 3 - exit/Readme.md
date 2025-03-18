@@ -21,7 +21,7 @@ echo $?
 The error code, which is used as a communication tool to the outside
 up until Chapter 6 has to be in the interval of [0,255] (1 Byte)
 
-This is the basis for all upcoming programs. 
+This is the basis for all upcoming programs.
 The most important part is to get it to run. i.e. assemble
 and link it.
 
