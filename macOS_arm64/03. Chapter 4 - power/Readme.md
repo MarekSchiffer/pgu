@@ -103,14 +103,15 @@ is a generic swap function.
 ## Modern calling convention
 As mentioned before on modern systems the first 6 elements in x86_64 are passed
 by registers. Those six registers are, in order
-|Argument | Register|
-|-------------------|
-|  1st    |  %rdi   |
-|  2nd    |  %rsi   |
-|  3rd    |  %rdx   |
-|  4th    |  %rcx   |
-|  5th    |  %r8    |
-|  6th    |  %r9    |
+
+| Argument | Register |
+|----------|----------|
+| 1st      | %rdi     |
+| 2nd      | %rsi     |
+| 3rd      | %rdx     |
+| 4th      | %rcx     |
+| 5th      | %r8      |
+| 6th      | %r9      |
 
 Please note, I didn't have a class of wine when composing this list. 
 Unlike the people creating it. On a more serious note, there are obviously legacy reasons 

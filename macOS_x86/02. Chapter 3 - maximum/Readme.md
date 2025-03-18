@@ -225,7 +225,7 @@ is met or not and based upon that update the instruction pointer and follow the 
 [^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch-Execution Cycle, the assembler would simply subtract that number and place the correct one in the opcode. All of that would depend on how the CPU is "wired" together.
 [^3]: Pun intended, asshole :)
 [^linSearch]: It's actually a good exercise (after Chapter 3 and maybe 8) to implement
-  ```
-  void *lsearch(void *baseAddr, void *elm,  int *elmSize, int n, int (*cmp)(void*,void*));
-  ```
-  linear search for generics to be called from C. Note to self, done!
+    ```
+    void *lsearch(void *baseAddr, void *elm,  int *elmSize, int n, int (*cmp)(void*,void*));
+    ```
+    linear search for generics to be called from C. Note to self, done!
