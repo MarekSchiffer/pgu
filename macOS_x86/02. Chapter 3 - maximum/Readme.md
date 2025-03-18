@@ -220,10 +220,12 @@ two's complement. 1 means negative, 0 means positive. If the number is negative 
 of the cmp operation will update the conditional flag register will be set. The next opcode will then check if the appropriate condition
 is met or not and based upon that update the instruction pointer and follow the code path.
 
+
 [^1]: The Address Bus Low and Address Bus High for the 6502.
-[^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch Execution-Cycle, the assembler woudld simply subtract that number and place the correct one in the opcode. All of that would depend on how the CPU is wired together.
+[^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch-Execution Cycle, the assembler would simply subtract that number and place the correct one in the opcode. All of that would depend on how the CPU is "wired" together.
+[^3]: Pun intended, asshole :)
 [^linSearch]: It's actually a good exercise (after Chapter 3 and maybe 8) to implement
-```
-void *lsearch(void *baseAddr, void *elm,  int *elmSize, int n, int (*cmp)(void*,void*));
-```
-lement linear search for generics to be called from C. Note to self, done!
+  ```
+  void *lsearch(void *baseAddr, void *elm,  int *elmSize, int n, int (*cmp)(void*,void*));
+  ```
+  linear search for generics to be called from C. Note to self, done!

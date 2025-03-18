@@ -111,7 +111,7 @@ Since there are 31 registers to address we need 5 Bits for that $2^{5} = 32$. Th
 An immediate consequence is that not every immediate can be loaded directly in a register. While on x86_64 we could
 replace the value in the output register with with 0xFFFFFFFFFFFFFFFF, the highest possible 64-Bit number, that is not possible 
 in arm64. Since we only have 23-Bits left, the highest value that theoretically could be placed in a register is
-$2^{23} ^= 0x800000 $. 
+$2^{23}$ ^= 0x800000. 
 
 In practice it's actually less than that. The opcode is bigger and other bits are need for some neat subterfuges.  
 The point is Bits are scarce and arm64 uses a lot of clever tricks to safe bits. One of those tricks are aliases.

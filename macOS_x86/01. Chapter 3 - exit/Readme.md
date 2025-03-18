@@ -54,7 +54,7 @@ well be `hugo`
 All 64-Bit assembly instructions have the appendix q for quadword. Yes, I know!  Normally, the `word` size is equivalent to the size of the registers.  However, here a `word` is 32-Bit. Stripping it from all it's meaning. Therefore `.quad` not `.word`.
 
 It's the same for the **r** prefix. **r**ax means, the 64-Bit version of the a register.  
-**a** - a register 8-Bit (intel 8080, 1974)  
+**a** - a register 8-Bit (Intel 8080, 1974)  
 **ax** - a e**X**tended 16-Bit (Intel 8086, 1978)  
 **eax** - ax **EX**tended 32-Bit (Intel 386, 1985)  
 **rax** - eax **RX**tended 64-Bit (AMD Opteron / Athlon 64, 2003)  
