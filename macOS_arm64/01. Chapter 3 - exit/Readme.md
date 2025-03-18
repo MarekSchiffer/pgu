@@ -49,13 +49,14 @@ but may change in the future again.
    <br> <br>
 </div>
 
-## Note
+## Notes
 `.global _start` declares the label `_start` as global, which
 means it can be seen by the linker outside of the file. There
 is nothing special about the name `_start` and it could as
 well be `hugo`
 
-**Immediate diffrences**
+
+## Immediate diffrences**
 Before we go into more details about the differnces between x86_64
 and arm64, let's get the immediate consequences out of the way.
 The stderr return value is now in register x0.
@@ -130,5 +131,3 @@ mov x0, x1      <=>       orr x0, xzr, x1
 ```
 Here zr is a zero register; the x prefix is the 64-Bit version. Since $0 ∨ a = a$ $∀a $ it's the same as the mov instruction.
 Therefore wasting bits on a redundant opcode is omitted.
-
-
