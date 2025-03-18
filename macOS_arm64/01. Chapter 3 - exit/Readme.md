@@ -106,28 +106,27 @@ the two exit programs the syscall instruction on the x86_64 system is only 16-Bi
 the equivalent instruction on arm64 is 32-Bit long. The movq instruction on the other hand is 7-Byte 56 Bit long.
 
 Constant length instructions make decoding a little easier and certainly more intuitive.
-Since there are 31 registers to address we need 5 Bits for that. The opcode has a minimum for 4-Bits, leaving only
-23 bits.
+Since there are 31 registers to address we need 5 Bits for that $2^{5} = 32$. The opcode has a minimum for 4-Bits, leaving only 23-Bits.
 
 An immediate consequence is that not every immediate can be loaded directly in a register. While on x86_64 we could
 replace the value in the output register with with 0xFFFFFFFFFFFFFFFF, the highest possible 64-Bit number, that is not possible 
-in arm64. Since we only have 23 bits left, the highest value that theoretically could be placed in a register is
-$2^23 ^= 0x800000 $. 
+in arm64. Since we only have 23-Bits left, the highest value that theoretically could be placed in a register is
+$2^{23} ^= 0x800000 $. 
 
-In practice it's actually less than that. The point is Bits are scarce and arm64 uses a lot of clever tricks to safe
-bits. One of those tricks are aliases.
+In practice it's actually less than that. The opcode is bigger and other bits are need for some neat subterfuges.  
+The point is Bits are scarce and arm64 uses a lot of clever tricks to safe bits. One of those tricks are aliases.
 ## Aliases
 The mov instruction we used above is an alias not a real instruction. The real instruction is called movz.
 movz zeros out the every other bit except for the immediate.
 ```
 mov x0, #23      <=>       movz x0, #23
 ```
-The immediate is limited to 16-Bit $2^16 = 0x10000$, but there is an additional shift option to the opcode, which
+The immediate is limited to 16-Bit $2^{16} = 0x10000$, but there is an additional shift option to the opcode, which
 we'll see later.
 
 A more striking example of an alias is the mov instruction with two registers.
 ```
 mov x0, x1      <=>       orr x0, xzr, x1
 ```
-Here zr is a zero register; the x prefix is the 64-Bit version. Since $0 ∨ a = a$ $∀a $ it's the same as the mov instruction.
+Here zr is a zero register; the x prefix is the 64-Bit version. Since $0 ∨ a = a, ∀a $ it's the same as the mov instruction.
 Therefore wasting bits on a redundant opcode is omitted.

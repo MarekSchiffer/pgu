@@ -1,6 +1,6 @@
-## Overview**
+## Overview
 This program finds the maximum in an array of integers by the means
-of linear search[^1]. We'll load the first element into a register as
+of linear search[^linSearch]. We'll load the first element into a register as
 the running maximum. Then update the address of the element and move along
 the addresses, dereference the pointer and compare the element. with 0, to
 see if we reached the end and then with the current maximum to see if
@@ -31,8 +31,8 @@ b.lt next
 
 ## Behind the Curtain
 Behind the curtain this chapter is about two things
-- Branching
 - Addressing Modes
+- Branching
 
 # Addressing Modes:
 Addressing modes between arm64 and x86_64 are quite different.
@@ -118,9 +118,9 @@ adr x1, data_items
 ldr x0, [x1]
 ```
 adr is a 6-Bit opcode (5-Bit + SF), uses one Register (5-Bit) and 21 Bits to
-load the address. $2^21/1024 = 2048 = 2 MiB$ or 2MB for non nerds.
-adr can therefore reach any address in +/- 1MB of the program counter.
-The linker will then replace the data_items with the address as an immediate value.
+load the address. $2^{21}/1024 = 2048 = 2$MiB or 2MB for non nerds.
+adr can therefore reach any address within +/- 1MB of the program counter.
+The linker will then replace data_items with the address as an immediate value.
 ### Indirect Addressing Mode (Memory Pages)
 Up until now we had list in our .text section. That's necessary on macOS to
 use ldr or adr. However the .text section is read only on macOS and most other operating systems. 
@@ -138,9 +138,9 @@ one register (5-Bit) and has 21 Bits left to load an address. So what does it do
 than adr?
 First, it truncates the last 3 Bytes (12-Bit) to get to an even page number. For example,
 if pc = 0x0000000100003f50, it will zero out the last 12 Bits to pc = 0x0000000100003000.
-Therefore all instructions with a pc within 4096 Bits (512 Bytes) will give the same address. 
+Therefore all instructions with a pc within 4096 Bits (512 Bytes) will yield the same address. 
 The 21 Bits are still used to calculate an address but now the 3 Bits are used to space out the target address. i.e
-$4096 * 2^21 = 2^12 * 2^21$. To get this in GiB, we get $2^33/2^30 = 8$. Making addresses in the 
+$4096 * 2^{21} = 2^{12} * 2^{21}$. To get this in GiB, we get $2^{33}/2^{30} = 8$. Making addresses in the 
 range of +/- 4GB accessible. However, not every address since the 4096 were arbitrarily cut short. 
 In practice this means from every given point in the program code, the linker can only access labels 
 in chunks of 512 Bytes. For example if the value would be 1 it would evaluate to 1* 4096 or 0x1000, 
@@ -157,7 +157,7 @@ The assembler directive gotpageoff will now calculate the #imm16 offset within t
 Now, we have the bulk out of the way. We can store data in the .data section
 and get the address back into a register to work with. Now, let's assume
 we want to access an array. If we declare the array as .quad, each element will
-be 8 Bytes long. To access the 3rd element we need to add 24 Bytes to the base
+be 8 Bytes long. To access the 3rd element we need to add 3 Bytes (24-Bit) to the base
 address. We can do that with an base pointer offset.
 ```
 adrp x1, data_items@page
@@ -180,9 +180,9 @@ adrp x1, data_items@page
 ldr x0, [x1, #24]!
 ```
 The little "!" will first add 24 to x1 and then dereference it. However, here it 
-will not act like a rvalue and leave x1 unchanged. After the instruction is executed,
-x1 will be updated. This is particularly useful when working with an array and are
-we're looping through it, like we saw in the maximum example. In the next chapter we'll
+will not act like an rvalue and leave x1 unchanged. After the instruction is executed,
+x1 will be updated. This is particularly useful when working with an array when looping through it, 
+like we saw in the maximum example. In the next chapter we'll
 also see how this is used for the stack. 
 ### Post-Indexed Addressing Mode (with write-back)
 On the same token the current address can also be used first to load the value into
@@ -201,25 +201,26 @@ adrp x1, data_items@page
 mov x2, #17
 ldr x0, [x1, x2, lsl #3]
 ```
-The options for ldr with a 64 Bit register are 0 default and 3. That's it. 3 here means $2^3$
+The options for ldr with a 64-Bit register are 0 by default and 3. That's it. 3 here means $2^3$
 Why not simply #8? Nobody knows! Symbolically the expression evaluates to
-`[ 0x100004000 + (0x11 * 0x8 )] = [ 0x100004000 + 0x88] = [ 0x100004088]` the parentheses
+`[ 0x100004000 + (0x11 * 0x8) ] = [ 0x100004000 + 0x88 ] = [ 0x100004088 ]` the parentheses
 would now dereference the address and load the value into x0.
 ###  Word, Halfword, Byte, Heh?
 The following  
-A word is the length of a register. So, for a 64Bit machine a word referees to 64Bit. However,
-for some reason they messed it up. In arm64 a word is only 32Bit long. Why? again, who knows?So, word 32Bit. halfword is 16Bit and a byte is indeed a byte! For simplicity I choose to make the
+A word is the length of a register. So, for a 64-Bit machine a word referees to 64-Bit. However,
+for some reason they messed it up. On 64-Bit machines a word is only 32-Bit long. Why? Again, who knows? So, word 32Bit. halfword is 16Bit and a byte is indeed a byte! For simplicity I choose to make the
 array in the maximum program 8 bytes long. The values were all between [1,255] so a byte would've sufficed. macOS is a little endian system. That means the values in the registers are
-big endian but in memory the *Byte* order is reversed. With that said, if we write the following:
+big endian but in memory the **Byte** order is reversed. With that said, if we write the following:
 ```
 adrp x1, data_items@page
 mov x2, #17
 ldr w0, [x1, x2, lsl #2]
 ```
-Note, only by using the 32Bit registers the opcode will change and we can use lsl #2. 
+Note, only by using the 32-Bit registers the opcode will change and we can use lsl #2. 
 this will evaluate to $2^2 = 4$ and we get again symbolically
-[ 0x100004000 + (0x11 * 0x4 )] = [ 0x100004044] and we would get the value at that address.
-Note, the array hasn't changed. We're just going to the starting address in memory and instead of hopping forward in 8 byte steps, we do it in 4 Byte steps.  In C the equivalent would be
+[ 0x100004000 + (0x11 * 0x4) ] = [ 0x100004044 ] and we would get the value at that address.
+Note, the array hasn't changed. We're just going to the starting address in memory and instead of hopping forward in 8 byte steps, we do it in 4 Byte steps.  
+In C the equivalent would be
 ```
 long array[20];
 int s = *(((short*)(&array[0])) + 17);
@@ -230,7 +231,7 @@ adrp x1, data_items@page
 mov x2, #17
 ldrh w0, [x1, x2, lsl #1]
 ```
-#1 means again $2^1$. Otherwise, same spiel as before `[ 0x100004000 + (0x11 * 0x2 )]   = [ 0x100004022]`. 
+#1 means again $2^1$. Otherwise, same spiel as before `[ 0x100004000 + (0x11 * 0x2) ]   = [ 0x100004022 ]`. 
 Finally,  we have the pure byte.
 ```
 adrp x1, data_items@page
@@ -249,7 +250,7 @@ program code.
 Branching is where the magic happens.
 
 Before the invention of digital technology, electronic devices were very rigid.
-Rigid in a sense they followed a strict control flow. They were also analog but
+Rigid in a sense that they followed a strict control flow. They were also analog but
 that's not the point here. Every device before the takeover of the semiconductor
 followed a very rigid path of execution. Complex behaviour was carefully managed
 by signals and timing. Let's take an old CRT TV as an example. With the help of
@@ -257,7 +258,7 @@ a magnetic field an electron beam can be moved by changing the magnetic field
 between two metal plates, which is directly proportional to the current. But getting
 MacGyver on the screen is a little more involved. In order for a picture to from in
 front of the screen, the signal has to go from left to right and the moment it reaches
-the end needs to reset to to the left. At the same time the magnetic field for the vertical
+the end needs to reset to the left. At the same time the magnetic field for the vertical
 direction has to notch the beam down one scanline. All of that was carefully orchestrated by signals.
 The AC signal was used to create two sawtooth signals of two different frequencies with the
 help of basically capacitors, to guide the beam. Each time the current dropped to zero,
@@ -283,7 +284,7 @@ can be used to create a conditional logic that depends on something that's in it
 nothing but bytes in memory.
 
 
-# 1. Fetch
+### 1. Fetch
 The first critical component to understand is that every byte in memory can be accessed.
 Since the von Neumann architecture puts the opcode in memory, all the machine needs to
 know is where the current instruction is. That information is stored in the instruction
@@ -293,72 +294,88 @@ This binary number must then be transferred to the Instruction Register. Note, t
 are two different registers. One holds the address to the current instruction and the other
 the instruction itself.
 
-# 2. Decode
+### 2. Decode
 Next the instruction in the Instruction Register needs to be decoded. As the opcode is nothing
 but a binary number, the first step is to separate the number into different wires. That's
 done by a multiplexer.
 
 The important part here is to understand that the opcode acts like a punch card.
-A punch card had holes in it. Depending on where the hole was, different connections
+A punch card had holes in it. Depending on where the holes were, different connections
 were conductive or isolated and different circles would be closed or not be closed.
 
 By putting the binary number in the Instruction Register and splitting the number into different
-wires the same result is achieved. The different wires can now be connected in different ways
+wires the same result is achieved. The different wires can then be connected in different ways
 to form a finite state machine for each step of the instruction encoded in the binary number.
 
-That doesn't mean the instruction is now executed in one go.
+The concrete wiring behind the differnt connections is what forms the micro instructions that 
+need to be executed.
 
-# 3. Execute
+That means the instruction is **not** executed in one go.
+
+### 3. Execute
 Up to this point multiple steps were already executed. The memory address in the Instruction
-Address Register was used to to enable that memory memory address and put it on the Data Bus.
-Than the Instruction Register was opened or set to store that Instruction. If we imagine these
-discrete steps as button presses that need to happen in order, there is one crucial piece missing.
-The CPU clock. Contrary to the CRT TV example above the signal in a CPU is digital. A square wave
+Address Register was used to enable that  memory address and put it on the Data Bus.
+Then the Instruction Register was opened/set to store that Instruction. If we imagine these
+discrete steps as button presses that need to happen carefully in order one fafter the other, then 
+there is still one crucial piece missing. The CPU clock. 
+Contrary to the CRT TV example above the signal in a CPU is digital. A square wave
 on a fixed interval. That's very different than the analog signal mentioned above. The analog
 signal is based on timing. The digital signal is based on steps. If the clock speed is changed,
 the steps would still be executed in the exact same order of the steps, while an analog signal
-is based on timing and get get out of sync. The digital signal is like consecutive button presses,
-that are executed in order.
+is based on timing and can get out of sync. The digital signal is like consecutive button presses,
+that are executed in order. The unit that orecestrates all these instructions is normally called
+the Control Unit. 
 
 
 Depending on the opcode that was loaded in the Instruction Register there are now multiple additional
-steps that need to be done in order to execute that command. For example, loading another value from
+steps that need to take place in order to execute a command. For example, loading another value from
 memory into a register takes again multiple steps. First, putting the address in the Memory Address Access 
 Register[^1]. Second, putting the 
 value at that address on the Data Bus and third setting the desired register to store it. Forth, disabling the 
 Memory address, so the Data Bus is free again.
 
-Those are four steps encoded in one instruction.
+Those are four steps encoded in one instruction and hardwired in micorcode into the CPU.
 
-# 4. Write-Back
+### 4. Write-Back
 After the instruction is executed, The Fetch-Execution cycle isn't finished yet.
-The last part is to take the current address in the Instruction Address Register and add to the number to
-have the address of the next instruction in the Instruction Address Register. On a system with a fixed
-instruction length that's just adding a constant to the address 2 Byte for a 6502 4 Byte for arm64 and
-variable length for an x86.
+The last part is to take the current address in the Instruction Address Register and add to it, so that 
+the number holds the address of the next instruction in the Instruction Address Register. On a system with 
+a fixed instruction length that's just adding a constant to the address 2 Byte for a 6502, 4 Byte for arm64 
+and a variable length for an x86.
 
-After the number has been added, the instruction pointer is updated and the cycle continues. Wash, rinse and repeat;
-Lift, eat, sleep, repeat. Whatever, you prefer.
+After the number has been added, the instruction pointer is updated and the cycle continues.  
+Wash, rinse, repeat! or  
+Lift, eat, sleep, repeat!  
+Whatever you prefer.
 
 ## Arbitrary Branching
 Now, that we have an idea how one instruction after the other can be executed. The next question is how can can
 a program run indefinitely, given that RAM is finite? In other words how are loops implemented on a hardware level? 
 
 Given the previous explanation, the answer is surprisingly simple. After all, all that needs to be done is updating
-the Instruction Address Register. In other words, the number given has to be loaded as an immediate from the opcode 
-into the Instruction Address Register. Like above about 4 steps need to be hardwired behind the scenes  to make that 
-happen. But after the Fetch-Execution Cycle is completed, the instruction pointer now points to the address give in memory
-and the branch is completed[^2].
+the Instruction Address Register. Again, keep in mind that it's just a binary number addressing a memory position. 
+And since each memory address is equaly accesibleihh In other words, the number given has to be loaded as an immediate from the opcode 
+into the Instruction Address Register. 
+
+Like above about 4 steps must be hardwired behind the scenes to encode the branch instruction into a finite state machine or microcode if you like. After the Fetch-Execution Cycle is completed, the instruction pointer will now point to the address give in the instruction. The
+next execution will start from there and the branch is completed[^2].
 
 ## Conditional Branching
 The final part of the puzzle is the conditional branch. if-else statements. If two registers are compared one
 value in a register can either be smaller or equal to the second register. If it's neither smaller nor equal, it's
-bigger. Based of off this comparison a flag is set. Another byte in a register. On x86_64 it's called the rflags
-on arm64 it's NZCV (**N**egative,**Z**ero,**C**arry,o**V**erflow) part of the cpsr register.
-Subtracting two binary numbers for example will either lead to a 1 or a 0 in the most significant bit within two's 
-complement. 1 means negative, 0 means positive. If the number is negative the hardwired state machine microcode 
-of the cmp operation will update the conditional flag register. The next opcode will then check if the condition 
-is met or not and based upon that update the instruction pointer.
+bigger. Based off of this comparison a flag is set. Naturally, comparing two word long numbers and setting a comparison
+bit takes more than one microstep, which are hardwired in the compare instruction.
 
-[^1]: The Address Bus Low and Address Bus High for the 6502 the Bus.
-[^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch Execution-Cycle, the assembler woudld simply subtract that number an place it as the correct branch address.?
+On x86_64 the flag will be set in the rflags register. On arm64 it's NZCV (**N**egative,**Z**ero,**C**arry,o**V**erflow), which is 
+part of the cpsr register. Subtracting two binary numbers for example will either lead to a 1 or a 0 in the most significant bit within 
+two's complement. 1 means negative, 0 means positive. If the number is negative the hardwired state machine microcode 
+of the cmp operation will update the conditional flag register will be set. The next opcode will then check if the appropriate condition
+is met or not and based upon that update the instruction pointer and follow the code path.
+
+[^1]: The Address Bus Low and Address Bus High for the 6502.
+[^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch Execution-Cycle, the assembler woudld simply subtract that number and place the correct one in the opcode. All of that would depend on how the CPU is wired together.
+[^linSearch]: It's actually a good exercise (after Chapter 3 and maybe 8) to implement
+```
+void *lsearch(void *baseAddr, void *elm,  int *elmSize, int n, int (*cmp)(void*,void*));
+```
+lement linear search for generics to be called from C. Note to self, done!

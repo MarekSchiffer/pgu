@@ -1,7 +1,7 @@
 # Power function
 The power function here is a rudimentary function that takes two
 integer inputs, the base and the exponent and calculates the power
-$a^b$. The function is called twice and then add the results are added 
+$a^b$. The function is called twice and then the results are added 
 together, to explore the full stack behaviour.
 
 While the function itself is primitive, this chapter introduces
@@ -13,17 +13,18 @@ accessing a register. In the past when computers had fewer registers, e.g.
 6502 has 3 general purpose registers, the stack was primarily used.
 To this day, the x86_64 uses the stack for the return address but function
 parameters are nowadays passed by registers. After all, you place the value
-in the register, call the function and et voila everything is there.
+in the register, call the function and et voilà everything is there.
 
 Using the stack to pass parameters needs a little more getting used to than
 passing by registers and in this chapter we will focus on that. The calling
 convention using the stack is also inevitable when dealing with recursive
 functions, as seen in the next chapter. 
-In Chapter 8, we'll call a factorial functions from C making it necessary 
+In Chapter 8, we'll call functions from C making it necessary 
 to use modern calling convention. We'll get into more detail there. 
 <p align="center">
   <img src="./x86_Stack.gif" alt="Stack Animation x86_64" width="500">
 </p>
+
 # The Stack
 Every program on modern hardware "thinks" it owns all of memory. This little
 power function as well as Adobe Photoshop or Google Chrome. In reality
@@ -33,7 +34,8 @@ for us and creates a lookup table for what is called virtual memory.
 So, even though we see all of memory, not every virtual block is mapped
 to real physical memory. The moment we try to access a block of memory that is
 not mapped to real memory, we get the most comprehensive and accurate error
-message ever devised "Segmentation fault".
+message ever devised  
+ **Segmentation fault**.
 
 From this point on we'll just say memory and keep in mind that it's realy virtual memory.
 The memory for a program is roughly divided into 3 sections. The code section,
@@ -49,6 +51,9 @@ purely a design decision. In a way memory was there first, and the stack came
 later. Nevertheless, this can lead to confusion and you should have a picture
 like (Figure 1) in mind. 
 
+In practive remember, the axis for adding and subtracting is the memory axis __not__ 
+the direction in which the stack grows.
+
 ## Stack calling convention
 The gist of the stack calling convention is this:
  - We push the values in reverse order onto the stack. Using the 
@@ -58,19 +63,19 @@ The gist of the stack calling convention is this:
  - The **bl** instruction inserts the return address, that is the address
    of the current instruction + 4 Bytes in the **lr** register.
    and then changes the program counter (PC) to the label address.  
- - By convention, we push the frame pointer **fp** and the return address **lr** onto the stack
+ - By convention, at the beginning of the function, we push the frame pointer **fp** and the return address **lr** onto the stack
  - We then point the frame pointer **fp** at the same address as the stack pointer **sp**.
    Essentially, remembering what **sp** was when we entered the function.
  - Next we do what the function needs to do
- - At the end we restore **sp** with the help of **sp**. So, whatever we did
+ - At the end we restore **sp** with the help of **fp**. So, whatever we did
    after this the stack pointer will be the same as when we entered the function.
- - Finally we load  the frame pointer and link register back into **fp** and **lr** , 
-   restoring it to the value it was before we called the function. Remember, the ldp instruction 
-   uses **sp**. ldp simply returns the value at the address of **sp** and **sp** + **8**
-   If sp is not properly adjusted we would get the wrong values.
- - Finally, we use the ret instruction to return to the address. ret copies the address from 
+ - Next, we load  the frame pointer and link register back into **fp** and **lr**, 
+   restoring it to the value it was before we called the function. Remember, the **ldp** instruction 
+   uses **sp**. **ldp** simply returns the value at the address of **sp** and **sp** + **8**.
+   If **sp** is not properly adjusted we would get the wrong values.
+ - Finally, we use the **ret** instruction to return to the address. **ret** copies the address from 
    the link register **lr** into the program counter **pc**. If you forget to update **lr**
-   ret will copy whatever value is in **lr** and try to branch there.
+   **ret** will copy whatever value is in **lr** and try to branch there.
 ## The Stack ain't no Stack
 
 ## Stack Frame
@@ -99,7 +104,7 @@ is a generic swap function.
 As mentioned before on modern systems the first 6 elements in x86_64 are passed
 by registers. Those six registers are, in order
 |Argument | Register|
--------------------
+|-------------------|
 |  1st    |  %rdi   |
 |  2nd    |  %rsi   |
 |  3rd    |  %rdx   |
