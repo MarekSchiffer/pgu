@@ -241,7 +241,28 @@ ldrb w0, [x1, x2, lsl #0]
 Here the lsl #0 can be omitted and normally will. As before it means $2^0 = 1$.
 This time we hope forward in memory in bytes 
 `[ 0x100004000 + (0x11 * 0x1 )]   = [ 0x100004011]` . 
+## Branching ( cmp and flags)
+```asm
+.text
+.global _start
+_start:
 
+   mov x1, #17
+   mov x2, #23
+
+   cmp x1, x2
+   b.le if_case        ; x1 <= x2 ? x1 : x2;
+
+   mov x0, x2
+   b end_program
+
+   if_case:
+   mov x0, x1
+
+end_program:
+   mov x16, #1
+   svc #0x80
+```
 # Branching
 Branching is the ability for a computer to execute instructions in memory one
 at a time and react to certain conditions and branch out into other parts of the

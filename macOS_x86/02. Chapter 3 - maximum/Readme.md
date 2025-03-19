@@ -89,7 +89,26 @@ movq $3, %rdi
 movq 8(%rcx,%rdi,4), %rdx
 ```
 To reach the 52.
+## Branching (Practical)
+```asm
+.text
+.global _start
+_start:
+   movq $25, %rax
+   movq $23, %rbx
+ 
+   cmpq %rbx, %rax       # %rbx >= %rax
+   jle if_case          # (rax <= rbx ) ? rax : rbx;
 
+   movq %rbx, %rdi
+   jmp end_program
+   if_case:
+   movq %rax, %rdi
+
+end_program:
+   movq $0x2000001, %rax
+   syscall
+```
 # Branching
 Branching is the ability for a computer to execute instructions in memory one
 at a time and react to certain conditions and branch out into other parts of the
