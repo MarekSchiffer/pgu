@@ -31,8 +31,9 @@ b.lt next
 
 ## Behind the Curtain
 Behind the curtain this chapter is about two things
-- Addressing Modes
-- Branching
+- [Overview](## Overview)
+- [Addressing Modes](# Addressing Modes)
+- [Branching](#Branching)
 
 # Addressing Modes:
 Addressing modes between arm64 and x86_64 are quite different.
@@ -59,7 +60,7 @@ arm64 the corresponding mnemonic is adr. In the following we'll simply use the
 arm64 mnemonics as they're used and not constantly compare to x86_64.
 
 ### Immediate Mode:
-```
+```asm
 mov x0, #11
 ```
 is called immediate Mode.
@@ -71,7 +72,7 @@ zeros out the registers and moves. However, it gets an 16 Bit immediate value #i
 a logical shift left (lsl). Opcode 8 Bit, size flag (sf) 1-Bit, one Register 5-Bit, #imm16,
 well, 16-Bit and lsl 2-Bit. Therefore to insert an address into a register, we need mov and movk (move keep)
 movk has the same bits as movz and the same shift values 0, 16, 32 & 48.
-```
+```asm
 mov  x1, #0x4000
 movk x1, #0x0000, lsl #16        <-> .       movl $0x100004000, %rcx
 movk x1, #0x0001, lsl #32
@@ -80,7 +81,7 @@ After this instruction the address 0x000100004000 will be in register x1. In our
 example, that's the address of the list item. We now, again __could__ load the first
 item at that address into register x1 with
 ### Indirect Addressing Mode (Registers)
-```
+```asm
 ldr x0, [x1]                  <->           movq %(rax), %rdi
 ```
 Here, the address in x1 is dereferenced and the value at that address is loaded into x0. 
@@ -90,7 +91,7 @@ not use Address Space Layout Randomization (ASLR). Apple does; and since we're n
 allowed to statically link, the address of the list will always be randomly shifted,
 every time the program is run. We can still use a trick to make it work, at least
 a little.
-```
+```asm
  adr x1, .
  add x1, x1, #-0x34
 ```
@@ -104,7 +105,7 @@ On arm64 it's called PC-Relative, because here it's called the program counter n
 ## PC-Relative Addressing Mode
 ### Literal load using PC-Relative ( Relative Addressing Mode movq(%rip) ) 
 Now, that we have the hacks out of the way, let's look how we could load the first element of the list into a register normally.
-```
+```asm
  ldr x0, data_items
 ```
 will load the first element at the address of data_items into register x0.
@@ -113,7 +114,7 @@ to remember is that the value will be loaded into x0, not the address.
 ### Indirect Addressing Mode (Memory)
 If we don't want the first element but rather the address of data_items we can
 use the command adr
-```
+```asm
 adr x1, data_items
 ldr x0, [x1]
 ```
@@ -128,7 +129,7 @@ Storing data takes place in the .data section.
 To access data in the .data section, we use the command adrp address pages.
 Memory on arm machines is separated into pages. Normally 4KB wide. To
 get the address into a register, we proceed as follows:
-```
+```asm
 adrp x1 data_items@gotpage
 ```
 Please note the part @gotpage is an assembler directive. On MACH-O file systems, we'll often
@@ -148,7 +149,7 @@ returning the address 0x0000000100004000. If it were 65537  we would arrive at 6
 and at the address would be 0x0000000110004000 Everything within a page needs to be additionally added. 
 This can be achieved with the help of the assembler directive gotpageoff. On macOS and the Macho-O file system,
 we'll often use @pageoff instead. Again, both are not arm64 assembly instruction.
-```
+```asm
 adrp x1 data_items@gotpage
 add x1, x1, data_items@gotpageoff
 ```
@@ -159,14 +160,14 @@ and get the address back into a register to work with. Now, let's assume
 we want to access an array. If we declare the array as .quad, each element will
 be 8 Bytes long. To access the 3rd element we need to add 3 Bytes (24-Bit) to the base
 address. We can do that with an base pointer offset.
-```
+```asm
 adrp x1, data_items@page
 mov x2, #24
 ldr x0, [x1,x2]
 ```
 Symbolically we'll have [ x1 + x2 ]  = [ 0x100004000 + 0x18] = [ 0x100004018] and after dereferencing we'll get the value at that address. A similar effect can be achived with
 ### Immediate Offset Addressing
-```
+```asm
 adrp x1, data_items@page
 ldr x0, [x1, #24]
 ```
@@ -175,7 +176,7 @@ that address into x0. If the address in x1 is the same as above, we'll get the s
 ### Pre-Indexed Addressing Mode ( with write-back)
 Pre Indexed Addressing Mode is accomplished by a bang or exclamation mark,
 whatever you prefer.
-```
+```asm
 adrp x1, data_items@page
 ldr x0, [x1, #24]!
 ```
@@ -187,7 +188,7 @@ also see how this is used for the stack.
 ### Post-Indexed Addressing Mode (with write-back)
 On the same token the current address can also be used first to load the value into
 a register and then be increased/decreased. That's called Post-Indexed Addressing Mode.
-```
+```asm
 adrp x1, data_items@page
 ldr x2, [x1], #32
 ldr x0, [x1]
@@ -196,7 +197,7 @@ In this example the address at x1 is first dereferenced and loaded into x2 befor
 ### Indirect indexed  Addressing Mode with Scaling (Memory)
 Finally we  look at a few more obfuscated arm instructions. If you just want to access one
 element in and an array by index, you can scale the index with the
-```
+```asm
 adrp x1, data_items@page
 mov x2, #17
 ldr x0, [x1, x2, lsl #3]
@@ -211,7 +212,7 @@ A word is the length of a register. So, for a 64-Bit machine a word referees to 
 for some reason they messed it up. On 64-Bit machines a word is only 32-Bit long. Why? Again, who knows? So, word 32Bit. halfword is 16Bit and a byte is indeed a byte! For simplicity I choose to make the
 array in the maximum program 8 bytes long. The values were all between [1,255] so a byte would've sufficed. macOS is a little endian system. That means the values in the registers are
 big endian but in memory the **Byte** order is reversed. With that said, if we write the following:
-```
+```asm
 adrp x1, data_items@page
 mov x2, #17
 ldr w0, [x1, x2, lsl #2]
@@ -221,19 +222,19 @@ this will evaluate to $2^2 = 4$ and we get again symbolically
 [ 0x100004000 + (0x11 * 0x4) ] = [ 0x100004044 ] and we would get the value at that address.
 Note, the array hasn't changed. We're just going to the starting address in memory and instead of hopping forward in 8 byte steps, we do it in 4 Byte steps.  
 In C the equivalent would be
-```
+```asm
 long array[20];
 int s = *(((short*)(&array[0])) + 17);
 ```
 But, don't worry it doesn't stop here, we can also hop foreword in halfword steps (2 Bytes)
-```
+```asm
 adrp x1, data_items@page
 mov x2, #17
 ldrh w0, [x1, x2, lsl #1]
 ```
 #1 means again $2^1$. Otherwise, same spiel as before `[ 0x100004000 + (0x11 * 0x2) ]   = [ 0x100004022 ]`. 
 Finally,  we have the pure byte.
-```
+```asm
 adrp x1, data_items@page
 mov x2, #17
 ldrb w0, [x1, x2, lsl #0]

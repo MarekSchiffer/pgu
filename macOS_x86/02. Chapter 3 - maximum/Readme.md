@@ -9,8 +9,9 @@ First attempt in maximum arm:
 
 ## Behind the Curtain
 Behind the curtain this chapter is about two things
-- Addressing Modes
-- Branching
+- [Overview](## Overview)
+- [Addressing Modes](# Addressing Modes)
+- [Branching](#Branching)
 
 # Addressing Modes
 In some way this is the main topic of this task.
