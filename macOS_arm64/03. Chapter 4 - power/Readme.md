@@ -21,6 +21,7 @@ convention using the stack is also inevitable when dealing with recursive
 functions, as seen in the next chapter. 
 In Chapter 8, we'll call functions from C making it necessary 
 to use modern calling convention. We'll get into more detail there. 
+
 <p align="center">
   <img src="./.assets/2025-03-22_Marek_Schiffer_arm64_Stack_Retraction.gif" alt="Stack Animation arm_64" width="500">
 
@@ -29,6 +30,7 @@ to use modern calling convention. We'll get into more detail there.
   </div>
    <br> <br>
 </p>
+
 
 # The Stack
 Every program on modern hardware "thinks" it owns all of memory. This little
