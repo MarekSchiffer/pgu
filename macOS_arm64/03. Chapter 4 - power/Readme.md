@@ -23,6 +23,11 @@ In Chapter 8, we'll call functions from C making it necessary
 to use modern calling convention. We'll get into more detail there. 
 <p align="center">
   <img src="./.assets/2025-03-22_Marek_Schiffer_arm64_Stack_Retraction.gif" alt="Stack Animation arm_64" width="500">
+
+  <div align=center>
+    <figcaption>Figure 1: Calling a function using the stack; without using stp showing 16 Byte alignment consequences.</figcaption>
+  </div>
+   <br> <br>
 </p>
 
 # The Stack
