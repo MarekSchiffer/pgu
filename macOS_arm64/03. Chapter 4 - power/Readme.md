@@ -22,19 +22,18 @@ functions, as seen in the next chapter.
 In Chapter 8, we'll call functions from C making it necessary 
 to use modern calling convention. We'll get into more detail there. 
 
-<table align="center">
+<table border="0" align="center">
   <tr>
     <td align="center">
-      <img src="./.assets/2025-03-22_Marek_Schiffer_arm64_Stack_Retraction.gif" alt="Stack Animation arm_64" width="400"><br>
+      <img src="./.assets/2025-03-22_Marek_Schiffer_arm64_Stack_Retraction.gif" alt="Stack Animation arm_64" width="500"><br>
       <figcaption>Figure 1: Calling a function using the stack; without using stp showing 16 Byte alignment consequences.</figcaption>
     </td>
     <td align="center">
-      <img src="./.assets/2025-03-22_Marek_Schiffer_arm64_Stack_Retraction.gif" alt="Second Animation" width="400"><br>
-      <figcaption>Figure 2: Description of your second image.</figcaption>
+      <img src="./.assets/2025-03-22_Marek_Schiffer_arm64_Stack_Retraction.gif" alt="Stack Animation arm_64" width="500"><br>
+      <figcaption>Figure 2: Second instance of the animation (same as first).</figcaption>
     </td>
   </tr>
 </table>
-
 
 # The Stack
 Every program on modern hardware "thinks" it owns all of memory. This little
