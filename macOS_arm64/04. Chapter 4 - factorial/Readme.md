@@ -45,5 +45,5 @@ By traditional recursion I mean no analytical continuation via Gamma Function, l
 Without analytical continuation $0! = 1$ expansion is mostly used in series like
 
 $$
-sum_{k=0}^{\infty} \frac{1}{k!} x^k
+  sum_{k=0}^{\infty} \frac{1}{k!} x^k
 $$
