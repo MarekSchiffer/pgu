@@ -24,25 +24,18 @@ All other cases are resolved with n! = n * (n-1)!
 ## Parentheses.
 If we take the case 720!, actually let's take 4! for times sake and solve it recursively
 purely mathematically
-\begin{align*}
-4! &= 4 \times 3! \\
-   &= 4 \times (3 \times 2!) \\
-   &= 4 \times (3 \times (2 \times 1!)) \\
-   &= 4 \times (3 \times (2 \times (1 \times 0!))) \\
-   &= 4 \times (3 \times (2 \times 1)) \\
-   &= 4 \times (3 \times 2) \\
-   &= 4 \times 6 \\
-   &= 24
-\end{align*}
 
 $$
-4! &= 4 * 3!
-   &= 4 * ( 3 * 2!)
-   &= 4 * ( 3 * ( 2 * 1!))
-   &= 4 * ( 3 * ( 2 * ( 1 * 0! )))
-   &= 4 * ( 3 * ( 2 * ( 1 * 1 )))
-   &= 4 * ( 3 * ( 2 *  1 ))
-   &= 4 * ( 3 *  2 )
-   &= 4 * 6
-   &= 24
+\begin{align}
+4!& = 4 * 3! \\
+   & = 4 * ( 3 * 2! ) \\
+   & = 4 * ( 3 * ( 2 * 1! )) \\
+   & = 4 * ( 3 * ( 2 * ( 1 * 0! )) \\
+   & = 4 * ( 3 * ( 2 * ( 1 * ( 1 ))) \\
+   & = 4 * ( 3 * ( 2 * ( 1 * 1 )) \\
+   & = 4 * ( 3 * ( 2 * 1 )) \\
+   & = 4 * ( 3 * 2 ) \\
+   & = 4 * 6  \\
+   & = 24  \\
+\end{align}
 $$
