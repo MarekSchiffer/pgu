@@ -40,10 +40,10 @@ These principals are not unique to the factorial function, which is the simplest
 
 ### $0!$ Base case vs. #1!$ Base case
 I choose, $0!$ as the base case. In traditional recursion, that's not really necessary and most standard
-examples use $1!$ as the base case. After all $$ 1! = 1 * 0! = 1 * 1 = 1 $$.
+examples use $1!$ as the base case. After all $$1! = 1 * 0! = 1 * 1 = 1$$.
 By traditional recursion I mean no analytical continuation via Gamma Function, limiting the factorial to $n \geq 0$
 Without analytical continuation $0! = 1$ expansion is mostly used in series like
 
 $$
-  sum_{k=0}^{\infty} \frac{1}{k!} x^k
+  \sum_{k=0}^{\infty} \frac{x^k}{k!}
 $$
