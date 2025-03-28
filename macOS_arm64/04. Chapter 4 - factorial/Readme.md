@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./.assets/x86_Factorial_Stack.gif" alt="Factorial Animation x86_64" width="700">
+  <img src="./.assets/arm64_Factorial_NoRetract.gif" alt="Factorial Animation arm64" width="700">
 
   <div align=center>
     <figcaption>Figure 1: Factorial. </figcaption>
