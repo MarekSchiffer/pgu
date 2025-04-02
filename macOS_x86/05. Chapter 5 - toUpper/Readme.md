@@ -17,7 +17,7 @@ system.
 | Return Value (%rax) | System Call    | %rax       | %rdi            | %rsi               | %rdx             |
 |---------------------|----------------|------------|-----------------|--------------------|------------------|
 |                     | Exit           | 0x2000001  | Exit Code       |                    |                  |
-| fd                  | Open File      | 0x2000005  | File Address    | File Status Flag   | File Permissions |
+| fd                  | Open File      | 0x2000005  | File Path       | File Status Flag   | File Permissions |
 |                     | Close File     | 0x2000006  | File Descriptor |                    |                  |
 | Bytes Read          | Read File      | 0x2000003  | File Descriptor | Buffer Location    | Buffer Size      |
 |                     | Write File     | 0x2000004  | File Descriptor | Buffer Location    | Buffer Size      |
@@ -87,4 +87,4 @@ and place the bytes into our buffer. The syscall also needs the buffer size as i
 file offset. In other words, if we call read twice on the same inputfile it will start from where it left 
 off the last time. We don't need to track that. The operating system does that for us. It's at this moment 
 that you should feel the urge to write an operating system yourself. The layers of abstraction compound.
-Hello
+
