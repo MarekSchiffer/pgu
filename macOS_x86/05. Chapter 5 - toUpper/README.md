@@ -1,61 +1,90 @@
-At the moment the toUpper can't be linked as static
+# Introduction
+The basic premise of this chapter is to write a program that
+takes an input file A  and creates and output file B, where every letter 
+in B is capitalized. Therefore "toUpper".  
 
-Update 2023/2024. Now it can ONLY be linked as static. Well, I guess it could
-be linked against the macOS crap, but then you need to follow the modern
-x86_64 calling convention via registers (%rsi).
-
-We do that in the arm64 case, because it's necessary.
-
-The stack alignment has changed from 2021 to 2023, on the same machine mind you!
-Stack now doesn't have to be 16 aligned (like in arm64) and there is no padding.
-The old numbers are still in the file in case somebody needs them.
-
-The stack alignment has changed from 2021 to 2023, on the same machine, mind you! The stack now doesn't have to be 16-byte aligned (like in arm64), and there is no padding. The old numbers are still in the file in case somebody needs them.
-
-| Year | ST_SIZE_RESERVE | ST_FD_IN | ST_FD_OUT | ST_ARGC | ST_ARGV_0 | ST_ARGV_1 | ST_ARGV_2 |
-|------|------------------|----------|-----------|---------|------------|------------|------------|
-| 2020 | .equ 32          | -16      | -32       | 24      | 32         | 40         | 48         |
-| 2023 | .equ 16          | -8       | -16       | 0       | 8          | 16         | 24         |
-
-| <center>2020</center>                     | <center>2023</center>                   |
-|------------------------------------------|------------------------------------------|
-| .equ ST_SIZE_RESERVE, 32                 | .equ ST_SIZE_RESERVE, 16                 |
-| .equ ST_FD_IN, -16                        | .equ ST_FD_IN, -8                       |
-| .equ ST_FD_OUT, -32                       | .equ ST_FD_OUT, -16                     |
-| .equ ST_ARGC, 24                          | .equ ST_ARGC, 0                         |
-| .equ ST_ARGV_0, 32                        | .equ ST_ARGV_0, 8                       |
-| .equ ST_ARGV_1, 40                        | .equ ST_ARGV_1, 16                      |
-| .equ ST_ARGV_2, 48                        | .equ ST_ARGV_2, 24                      |
-
-Note from 2020, no obsolete!
-
-We need:
-Note from 2020, no obsolete!
+This chapter goes deeper into syscalls and shows how high up the stack we still are.
+The second lesson of this chapter is to expand the calling convention so that an external
+File can be passed to the program. This is the analogon to 
+```c
+int main(int argc, char **argv) {
 ```
-        2020:                                2023:
-.equ ST_SIZE_RESERVE, 32          .equ ST_SIZE_RESERVE, 16
-.equ ST_FD_IN, -16                .equ ST_FD_IN, -8
-.equ ST_FD_OUT, -32               .equ ST_FD_OUT, -16
-.equ ST_ARGC, 24                  .equ ST_ARGC, 0
-.equ ST_ARGV_0, 32                .equ ST_ARGV_0, 8
-.equ ST_ARGV_1, 40                .equ ST_ARGV_1, 16
-.equ ST_ARGV_2, 48                .equ ST_ARGV_2, 24
+Here argc is the argument count and argv is the argument vector(?), which is an array
+holding the address to the passed in files. The body of work is again done by the operating
+system.
 
+## syscalls
+| Return Value (%rax) | System Call    | %rax       | %rdi            | %rsi               | %rdx             |
+|---------------------|----------------|------------|-----------------|--------------------|------------------|
+|                     | Exit           | 0x2000001  | Exit Code       |                    |                  |
+| fd                  | Open File      | 0x2000005  | File Address    | File Status Flag   | File Permissions |
+|                     | Close File     | 0x2000006  | File Descriptor |                    |                  |
+| Bytes Read          | Read File      | 0x2000003  | File Descriptor | Buffer Location    | Buffer Size      |
+|                     | Write File     | 0x2000004  | File Descriptor | Buffer Location    | Buffer Size      |
+
+
+Additionally to the exit syscall we've been using, we need four new syscall. One to open
+a file, one to close the file again, one to read from a file and one to write to a file.
+
+### Files in UNIX
+BSD is a UNIX derivative and macOS is a BSD derivative. At it's core macOS is a UNIX sytem.
+That's what makes it useful. \#ShotsFired!  
+
+### File Descriptor Flags
+Files on UNIX have permissions. Every file can be read, written to or it can be executed.
+The files also have ownership. They can belong to the user, a group, or everyone. 
+All three permissions are stored in an octal value, where read is 4, write is 2
+and execute is 1. Therefore the shell command 
 ```
-Note from 2020, no obsolete!
-
-We need
-
+chmod 0644 ./toUpper
 ```
-ld -macosx_version_min 11.0 -L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib -lSystem -e _start toupper64_macOS.o -o toupper64_macOS
+would allow the owner, first digit after the leading 0, to read and write, since
+$6 = 4 + 2$. The group, second digit after leading 0, allows the group to read and the last
+digit allows everybody to read. The leading zero indicates that this is an octal number
+$\in [0,7]$.
 
-Also it seems that filenames are a problem
-/toupper64_macOS BobDylanIAM.txt out.txt
-
-But
-/toupper64_macOS ./BobDylanIAM.txt out.txt
-
-Does not!
-
-To Do: Find out why!
+In the same way 
 ```
+chmod 0711 ./toUpper
+```
+would allow the owner to read, write and execute the program, while everybody else can just execute it.
+
+### File permissions within the program ( **File Status Flags** )
+The permissions outlined above are valid for files outside of the program. Additionally, we need to
+specify the permissions within the program. Are we allowed to write to the file? Do we overwrite it,
+if it already exists? Do we append to it, if it already exists? All this can be specified and is another
+input to the syscall. These permissions are called **File Status Flags** and are typically given in hexadecimal.
+The Flag names are standardized and prefixed with O\_ for **O**pen.
+The ones, we'll need are:
+| Flag       | Hex Value | Description                                      |
+|------------|-----------|--------------------------------------------------|
+| O_RDONLY   | 0x0       | Open file **R**ead **Only**.                     |
+| O_WRONLY   | 0x1       | Open file **Wr**ite **Only**.                    |
+| O_RDWR     | 0x2       | Open file **R**ea**d** and **Wr**iting.          |
+| O_APPEND   | 0x8       | **Append** to file                               |
+| O_CREAT    | 0x200     | **Creat**e file if it doesn't exist              |
+| O_TRUNC    | 0x400     | **Trunc**ate file to zero length if it exists    |
+
+You might ask, why O\_CREAT is missing an e at the end. Imagine me staring at
+you like George Washington in the famous SNL skit and responding "Nobody knows!"
+
+To open a file in **W**rite**Only** mode, **c**reate it, if it doesn't exit and
+**trunc**ate it, if it already exists, we would use $\text{0x601} = \text{0x400} + \text{0x200} + \text{0x001}$.
+
+### File Descriptors
+The next pesky little thing we need to deal with are File Descriptors. If we ask the operating system
+to open the file, it will do it and return a file descriptor to us. That number can then be passed back
+to the os to write to the file. The operating system behind the scenes loads the file into memory, 
+then changes it and uses the filesystem to write it to disk. As we operate in userspace, we need to
+use the file descriptor to specify the files. The syscalls read and write need the file descriptor as 
+input.  
+
+### Reading and Writing to a file
+Reading from a file means loading it into memory, that we own. That is typically called a buffer. We'll
+therefore declare a buffer in memory and pass it to the syscall. The syscall will read from the file
+and place the bytes into our buffer. The syscall also needs the buffer size as input and then  
+**the syscall will internally remember the position within the file**. This is typcially called the 
+file offset. In other words, if we call read twice on the same inputfile it will start from where it left 
+off the last time. We don't need to track that. The operating system does that for us. It's at this moment 
+that you should feel the urge to write an operating system yourself. The layers of abstraction compound.
+Hello
