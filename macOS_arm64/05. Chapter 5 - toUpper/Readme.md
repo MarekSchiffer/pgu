@@ -106,3 +106,10 @@ file offset. In other words, if we call read twice on the same inputfile it will
 off the last time. We don't need to track that. The operating system does that for us. It's at this moment
 that you should feel the urge to write an operating system yourself. The layers of abstraction compound.
 
+## To upper 
+The most interesting part about the to upper conversion is the store writeback to memory. The bytes are read
+in one by one. Therefore, they need to be written back to memory using only the first byte of the register,
+otherwise we overwrite what's in memory. The ASCII table stores capital letters between $65_{10}$ 'A', and 
+$90_{10}$ 'Z'. Alphabet has 26 letters; who would've known. The lower letters start at $97_{10}$ 'a' and go to
+$122_{10}$ 'z'. Therefore between each captial letter and its corresponding lowercase letter is a difference of 
+$32_{10}$. 
