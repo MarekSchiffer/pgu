@@ -6,6 +6,7 @@
   </div>
   <br> <br>
 </div>
+
 # Introduction
 The basic premise of this chapter is to write a program that
 takes an input file A  and creates and output file B, where every letter 
