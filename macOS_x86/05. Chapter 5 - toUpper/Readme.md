@@ -1,3 +1,11 @@
+<div align="center">
+  <img src="./.assets/2025-04-03_Marek_Schiffer_x86_64_Calling_External.png" alt="External Calling x86_64" width="700">
+
+  <div align="center">
+    <figcaption> Figure 1: Passing of external arguemts via Stack (2023) </figcaption>
+  </div>
+  <br> <br>
+</div>
 # Introduction
 The basic premise of this chapter is to write a program that
 takes an input file A  and creates and output file B, where every letter 
@@ -14,13 +22,13 @@ holding the address to the passed in files. The body of work is again done by th
 system.
 
 ## syscalls
-| Return Value (%rax) | System Call    | %rax       | %rdi            | %rsi               | %rdx             |
-|---------------------|----------------|------------|-----------------|--------------------|------------------|
-|                     | Exit           | 0x2000001  | Exit Code       |                    |                  |
-| fd                  | Open File      | 0x2000005  | File Path       | File Status Flag   | File Permissions |
-|                     | Close File     | 0x2000006  | File Descriptor |                    |                  |
-| Bytes Read          | Read File      | 0x2000003  | File Descriptor | Buffer Location    | Buffer Size      |
-|                     | Write File     | 0x2000004  | File Descriptor | Buffer Location    | Buffer Size      |
+| Return Value %rax   | System Call    | %rax       | %rdi            | %rsi               | %rdx                 |
+|---------------------|----------------|------------|-----------------|--------------------|----------------------|
+|                     | Exit           | 0x2000001  | Exit Code       |                    |                      |
+| File Descriptor     | Open File      | 0x2000005  | File Path       | File Status Flag   | File Descriptor Flag |
+|                     | Close File     | 0x2000006  | File Descriptor |                    |                      |
+| Bytes Read          | Read File      | 0x2000003  | File Descriptor | Buffer Location    | Buffer Size          |
+|                     | Write File     | 0x2000004  | File Descriptor | Buffer Location    | Buffer Size          |
 
 
 Additionally to the exit syscall we've been using, we need four new syscall. One to open
@@ -39,23 +47,24 @@ and execute is 1. Therefore the shell command
 chmod 0644 ./toUpper
 ```
 would allow the owner, first digit after the leading 0, to read and write, since
-$6 = 4 + 2$. The group, second digit after leading 0, allows the group to read and the last
-digit allows everybody to read. The leading zero indicates that this is an octal number
+$6 = 4 + 2$. The group, second digit after leading 0, has permission to read and the last
+digit allows everyone to read as well. The leading zero indicates that this is an octal number
 $\in [0,7]$.
 
 In the same way 
 ```
 chmod 0711 ./toUpper
 ```
-would allow the owner to read, write and execute the program, while everybody else can just execute it.
+would allow the owner to read, write and execute the program $7 = 4 + 2 + 1$, while everybody else can just execute it.
 
-### File permissions within the program ( **File Status Flags** )
-The permissions outlined above are valid for files outside of the program. Additionally, we need to
-specify the permissions within the program. Are we allowed to write to the file? Do we overwrite it,
-if it already exists? Do we append to it, if it already exists? All this can be specified and is another
-input to the syscall. These permissions are called **File Status Flags** and are typically given in hexadecimal.
-The Flag names are standardized and prefixed with O\_ for **O**pen.
+### File Status Flags
+The permissions outlined File Descriptor Falgs above are valid for files outside of the program. 
+Additionally, we need to specify the permissions within the program. Are we allowed to write to the file? 
+Do we overwrite it, if it already exists? Do we append to it, if it already exists? All this can be 
+specified and is another input to the syscall. These permissions are called **File Status Flags** and are 
+typically given in hexadecimal.  The Flag names are standardized and prefixed with O\_ for **O**pen.
 The ones, we'll need are:
+
 | Flag       | Hex Value | Description                                      |
 |------------|-----------|--------------------------------------------------|
 | O_RDONLY   | 0x0       | Open file **R**ead **Only**.                     |
