@@ -32,10 +32,10 @@ b.lt next
 ## Behind the Curtain
 Behind the curtain this chapter is about two things
 - [Overview](##Overview)
-- [Addressing Modes](#Addressing)
+- [Addressing Modes](#Addressing-Modes)
 - [Branching](#Branching)
 
-# Addressing Modes:
+# Addressing Modes
 Addressing modes between arm64 and x86_64 are quite different.
 The most striking difference is the RIP-Mode. In x86_64 we could
 calculate addresses directly by adding %rip to the label for either movq
