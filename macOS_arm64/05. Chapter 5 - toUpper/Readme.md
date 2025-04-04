@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="./.assets/2025-04-03_Marek_Schiffer_arm64_Calling_External.png" alt="External Calling x86_64" width="700">
+  <img src="./.assets/2025-04-04_Marek_Schiffer_arm64_Calling_External_Expanded" alt="External Calling x86_64" width="700">
 
   <div align="center">
-    <figcaption> Figure 1: Passing of external arguemts on arm64 via x0 and x1</figcaption>
+    <figcaption> Figure 1: Passing of external arguemts on arm64 via x0 and x1 on macOS. </figcaption>
   </div>
   <br> <br>
 </div>
@@ -106,10 +106,16 @@ file offset. In other words, if we call read twice on the same inputfile it will
 off the last time. We don't need to track that. The operating system does that for us. It's at this moment
 that you should feel the urge to write an operating system yourself. The layers of abstraction compound.
 
-## To upper 
-The most interesting part about the to upper conversion is the store writeback to memory. The bytes are read
-in one by one. Therefore, they need to be written back to memory using only the first byte of the register,
-otherwise we overwrite what's in memory. The ASCII table stores capital letters between $65_{10}$ 'A', and 
-$90_{10}$ 'Z'. Alphabet has 26 letters; who would've known. The lower letters start at $97_{10}$ 'a' and go to
-$122_{10}$ 'z'. Therefore between each captial letter and its corresponding lowercase letter is a difference of 
-$32_{10}$. 
+## To upper coversion
+The most interesting part about the to upper conversion is the store/writeback to memory. The bytes are read
+in one-by-one. Therefore, they need to be written back to memory using only the first byte of the register,
+otherwise we would overwrite what's in memory with a bunch of zeros in the register.  
+
+The ASCII table stores capital letters between $65$ 'A', and $90$ 'Z'.
+The alphabet has 26 letters, who would've known?! The lower letters start at $97$ 'a' and go to
+$122$ 'z'. Therefore between each captial letter and its corresponding lowercase letter is a
+difference of $32$. The conversion is therefore a matter of subtracting $32$ from a lower case letter
+to convert it to upercase.
+
+
+
