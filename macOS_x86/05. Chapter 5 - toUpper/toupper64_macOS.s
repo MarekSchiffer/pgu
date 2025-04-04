@@ -5,7 +5,10 @@
 .equ SYS_CLOSE, 0x2000006
 .equ SYS_EXIT, 0x2000001
 
-# File Descriptor Flag and File Status Flag
+# File Descriptor Flag
+.equ READ_WRITE_ANYONE, 0666
+
+# File Status Flag
 .equ O_RDONLY, 0x000
 .equ O_CREAT_WRONLY_TRUNC, 0x601
 
@@ -44,7 +47,7 @@ _start:
   movq $SYS_OPEN, %rax
   movq ST_ARGV_1(%rbp), %rdi
   movq $O_RDONLY, %rsi
-  movq $0666, %rdx
+  movq $READ_WRITE_ANYONE, %rdx
   syscall
 
 
@@ -56,7 +59,7 @@ _start:
   movq $SYS_OPEN, %rax
   movq ST_ARGV_2(%rbp), %rdi
   movq $O_CREAT_WRONLY_TRUNC, %rsi
-  movq $0666, %rdx
+  movq $READ_WRITE_ANYONE, %rdx
   syscall
 
 
