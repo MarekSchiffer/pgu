@@ -120,7 +120,7 @@ to convert it to upercase.
 
 ### Old Stack passing
 <div align="center">
-  <img src =./.assets/2025-04-04_Marek_Schiffer_x86_64_Calling_External_2020_Expand.png" alt="Old macOS argv passing" width="700"> 
+  <img src="./.assets/2025-04-04_Marek_Schiffer_x86_64_Calling_External_2020_Expand.png" alt="Old macOS argv passing" width="700"> 
 
   <div align ="center">
     <figcaption> Figure 2: Passing of external arguments via stack macOS (2020) </figcaption>
@@ -128,8 +128,8 @@ to convert it to upercase.
   <br> <br>
 </div>
 
-In 2021, on macOS Catalina and Big Sur the stack needed to be 16 Bytes aligned and the arguments were passed
-rather peculiar with on offest of $+24$ for argc to rsp. See (Figure 2). Making room for 32 Bytes on the local stackframe
-was probably unnecessary and $16$ Bytes would've sufficed. Nevertheless, I left it in the graph like it worked.
+In 2021, on macOS **Catalina** and **Big Sur** the stack needed to be 16 Bytes aligned and the arguments were passed
+rather peculiar with an offest of $+\textbf{24}$ for argc to rsp. See (Figure 2). Making room for 32 Bytes on the local stackframe
+was probably unnecessary and $\textbf{16}$ Bytes would've sufficed. Nevertheless, I left it in the graph like it worked.
 The passing of the stack has changed at some point before 2023. All on the same machine MacBook Pro (15-inch 2016).
 
