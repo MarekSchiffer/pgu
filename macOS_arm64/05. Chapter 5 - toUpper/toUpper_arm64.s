@@ -1,102 +1,149 @@
-.equ buffer_size, 500 // Must be on top
+//Syscalls
+.equ SYS_EXIT,  1
+.equ SYS_READ,  3
+.equ SYS_WRITE, 4
+.equ SYS_OPEN,  5
+.equ SYS_CLOSE, 6
+
+.equ BUFFER_SIZE, 516
+
+// Local Stackframe
+.equ BUFFER_ADDRESS,   0
+.equ FD1_STACK,       -8
+.equ FD2_STACK,       -16
+.equ ADDR_INPUTFILE,  -24
+.equ ADDR_OUTPUTFILE, -32
+
+// File Status Flags
+.equ O_RDONLY, 0x000
+.equ O_WRONLY_CREATE_TRUNC, 0x601
+
+// File Descriptor
+.equ READ_WRITE_PERMISSION, 0666
+
+
 
 .text
 .global _start
 _start:
+  mov fp, sp
+  sub sp, sp, #48
 
-// Open Input File
-  mov x0, #-2
-  adrp x1, inputfile@page
-  add x1, x1, inputfile@pageoff
-  mov x2, #0
-  mov x3, #0666
-  mov x16, #0x1cf   // Apple sucks sometimes, eh!
+  cmp x0, #3                               ; argc
+  b.ne exitError
+
+  ldr x0, [x1, #8]                         ; argv[1]
+  ldr x1, [x1, #16]                        ; argv[2]
+
+  str x0, [fp, #ADDR_INPUTFILE]
+  str x1, [fp, #ADDR_OUTPUTFILE]
+
+open_input_file:
+  mov x1,  #O_RDONLY                       ; Open Inputfile
+  mov x2,  #READ_WRITE_PERMISSION
+  mov x16, #SYS_OPEN
   svc #0x80
 
-  mov x11, x0 // save fd in x11
 
-// Open Output File
-  mov x0, #-2
-  adrp x1, outputfile@page
-  add x1, x1, outputfile@pageoff
-  mov x2, #0x201
-  mov x3, #0666
-  mov x16, #0x1cf
-  svc #0x80
-  
-  mov x12, x0 // save fd in x12
-
-// Read into Buffer
-read_loop:
-   mov x0, x11
-   adrp x1, buffer@page
-   add x1, x1, buffer@pageoff
-   mov x2, #buffer_size
-   mov x16, #3
-   svc #0x80
- 
-    mov x10, x0 // store length of file
-
-   adrp x1, buffer@page
-   add x1, x1, buffer@pageoff
-   stp x1, x10, [sp, -0x10]!
-   bl toUpper
-   add sp, sp, 0x10
-
-// Write File
-   mov     x0, x12 
-   adrp x1, buffer@page
-   add x1, x1, buffer@pageoff
-   mov x2, x10
-   mov x16, #4
-   svc #0x80
+  str x0, [fp, #FD1_STACK]
+  ldr x0, [fp, #ADDR_OUTPUTFILE]
 
 
-cmp x10, #buffer_size
-b.eq read_loop
-
-// Close Input File
-  mov x0, x11
-  mov x16, #6
+open_output_file:
+  mov x1,  #O_WRONLY_CREATE_TRUNC          ; Open Outputfile
+  mov x2,  #READ_WRITE_PERMISSION
+  mov x16, #SYS_OPEN
   svc #0x80
 
-// Close Output File
-  mov x0, x12
-  mov x16, #6
+
+  str x0, [fp, #FD2_STACK]
+
+
+  adrp x1, buffer@page                      ; Local Buffer
+  add x1, x1, buffer@pageoff
+  str x1, [fp, #BUFFER_ADDRESS]
+
+begin_read_loop:
+
+    ldr x0, [fp, #FD1_STACK]
+    ldr x1, [fp, #BUFFER_ADDRESS]
+    mov x2, #BUFFER_SIZE
+    mov x16, #SYS_READ
+    svc #0x80
+
+    cmp x0, #0
+    b.eq close_files
+
+;   str x0, [fp, #READ_BYTES]
+
+    ldr x1, [fp, #BUFFER_ADDRESS]
+    stp x0, x1, [sp, #-16]!
+    bl toUpper
+
+    ldp x2, x1, [sp], #16
+    ldr x0, [fp, #FD2_STACK]
+    mov x16, #SYS_WRITE
+    svc #0x80
+
+b begin_read_loop
+
+close_files:
+  ldr x0, [fp, #FD1_STACK]                    ; Close inputfile
+  mov x16, #SYS_CLOSE
   svc #0x80
 
-// Exit Program
+  ldr x0, [fp, #FD2_STACK]                    ; Close outputfile
+  mov x16, #SYS_CLOSE
+  svc #0x80
+
   mov x16, #1
-  mov x0, #23
   svc #0x80
+
+exitError:
+  mov x0,  #44
+  mov x16, #1
+  svc #0x80
+
+
+
+
 
 toUpper:
- stp x29, x30, [sp, 0x10]!
- add x29, sp, #0
+  stp fp, lr, [sp, #-16]!
+  mov fp, sp
 
- ldr x3, [x29, -0x10]   // Buffer
- ldr x4, [x29, -0x08]   // Buffer length
+  ldp x0, x1, [fp, #16]
 
-loop:
- ldrb w5, [x3]
- cmp w5, #'z'
-   b.gt next_byte
- cmp w5, #'a'
-   b.lt next_byte
- sub w5, w5, #('a'-'A')
+  cmp x0, #0
+  b.eq end_toUpper
+
+  mov x2, #0
+
+loop_toUpper:
+  cmp x2, x0
+  b.eq end_toUpper
+
+  ldrb w3, [x1]
+  cmp w3, #96
+  b.le next_byte
+  cmp w3, #123
+  b.ge next_byte
+
+  sub w3, w3, #32
 
 next_byte:
- strb w5, [x3], #1
- cmp w5, #0
+  strb w3, [x1], #1
+  add x2, x2, #1
+  b loop_toUpper
 
-   b.ne loop
+end_toUpper:
+  mov sp, fp
+  ldp fp, lr, [sp], #16
+  ret
 
- ldp x29, x30, [sp], 0x10 
- ret
+.bss
+.lcomm buffer, BUFFER_SIZE
 
-.data
-inputfile:  .asciz "BobDylan.txt"
-outputfile: .asciz "out.txt"
-buffer: .fill buffer_size + 1, 1, 0
-
-
+;.data
+;inputfile:  .asciz "BobDylan.txt"
+;outputfile: .asciz "out.txt"
