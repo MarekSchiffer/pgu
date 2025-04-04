@@ -106,6 +106,20 @@ file offset. In other words, if we call read twice on the same inputfile it will
 off the last time. We don't need to track that. The operating system does that for us. It's at this moment
 that you should feel the urge to write an operating system yourself. The layers of abstraction compound.
 
+## The Read Loop
+At this point, the syscall, reads the bytes from the file, and copies them to the
+512 bytes reserved for BUFFER_DATA. The syscall also returns the size of the read bytes
+(charactes 0x20 is a space, 0x0a a newline) into %rax
+
+The mystery here is, how read knows, where to start the read instruction after the first
+itteration. Normally we would expect to pass the starting point i.e. byte 501,1001, etc
+after the first iteration.
+
+This operation is completely hidden within the read function. Internally there is loff_t pos,
+which keeps track of the current position in the file. Therefore every time we call read,
+we start at the correct position. Once the end of the file is reached, read will return 0
+as is 0 characters have been read and we can terminate the loop.
+
 ## To upper coversion
 The most interesting part about the to upper conversion is the store/writeback to memory. The bytes are read
 in one-by-one. Therefore, they need to be written back to memory using only the first byte of the register,
@@ -117,5 +131,24 @@ $122$ 'z'. Therefore between each captial letter and its corresponding lowercase
 difference of $32$. The conversion is therefore a matter of subtracting $32$ from a lower case letter
 to convert it to upercase.
 
+## Passing external parameters
+Now, we want to pass the input and output file to our program directly rather than have to edit the file itself.
+On macOS with an arm64 architecture, this is done via registers. See (Figure 1). When the program is called, the 
+Operating System, i.e. macOS will place `argc` into `x0` and `argv` into `x1`.
+For example if you call the function as follows:
+```bash
+./toUpper InputFile.txt OutputFile.txt
+```
+`argc` would be 3. Counting from 0, $\text{argv}[0]$ would be `./toUpper`, $\text{argv}[1]$, would be the address of 
+`InputFile.txt` and $\text{argv}[2]$ would be the address of `OutputFile.txt`. Therefore `x1 holds the starting address of the `argv` vector. 
+Every address to the actual pathnames can then be accessed with
+```asm
+ldr x2, [x1, #8]
+ldr x3, [x1, #16]
+```
+and so on. Each value loaded into a register will hold an 8 Byte address to the actual string of the path name in memory.
+That's necessary as the addresses all have constant length, while the actual filenames vary in length and can
+easily exceed the length of 8 Characters/Bytes. Even `OutputFile.txt` has 14 Bytes, plus 00 as a terminating character.
+If you're familiar with the C convention of main, see code above, the address in x1 is of type `**argv`.
 
-
+As the syscalls expects the address of the string representing the pathname, all we need to do is pass that address to the syscall.

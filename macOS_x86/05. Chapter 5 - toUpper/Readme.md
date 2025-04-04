@@ -107,6 +107,20 @@ file offset. In other words, if we call read twice on the same inputfile it will
 off the last time. We don't need to track that. The operating system does that for us. It's at this moment
 that you should feel the urge to write an operating system yourself. The layers of abstraction compound.
 
+## The Read Loop
+At this point, the syscall, reads the bytes from the file, and copies them to the
+512 bytes reserved for BUFFER_DATA. The syscall also returns the size of the read bytes
+(charactes 0x20 is a space, 0x0a a newline) into %rax
+
+The mystery here is, how read knows, where to start the read instruction after the first
+itteration. Normally we would expect to pass the starting point i.e. byte 501,1001, etc
+after the first iteration.
+
+This operation is completely hidden within the read function. Internally there is loff_t pos,
+which keeps track of the current position in the file. Therefore every time we call read,
+we start at the correct position. Once the end of the file is reached, read will return 0
+as is 0 characters have been read and we can terminate the loop.
+
 ## To upper coversion
 The most interesting part about the to upper conversion is the store/writeback to memory. The bytes are read
 in one-by-one. Therefore, they need to be written back to memory using only the first byte of the register,
@@ -118,18 +132,32 @@ $122$ 'z'. Therefore between each captial letter and its corresponding lowercase
 difference of $32$. The conversion is therefore a matter of subtracting $32$ from a lower case letter
 to convert it to upercase.
 
-### Old Stack passing
+## Passing external parameters
+Now, we want to pass the input and output file to our program directly rather than have to edit the file itself.
+On macOS with an x86\_64 architecture this is done via the stack. When calling the program the operating system,
+i.e. macOS will push the arguments onto the stack and adjust the stack pointer `rsp` See (Figure 1). 
+As of 2023 the `rsp` points directly at argc, which holds the number of arguments. If we were to call toUpper with
+```
+./toUpper InputFile.txt OutputFile.txt
+```
+argc would be 3. Counting from 0, $\text{argv}[0]$ would be ./toUpper, $\text{argv}[1]$ would be the address of the string
+`InputFile.txt` and $\text{argv}[2]$ would be the address of the string `OutputFile.txt`. If you're familiar with the C convention
+of main, see code above, the parameter is of type `**argv`. Therefore holding an 8 Byte address to the actual path name 
+in memory. That's necessary as the addresses all have constant length, while the actual filenames vary in length and can
+easily exceed the length of 8 Characters/Bytes. Even `OutputFile.txt` has 14 Bytes, plus 00 as a terminating character.
+
+As the syscalls expects the address of the string representing the pathname, all we need to do is pass that address to the syscall.
+### Old Stack passing convention (Catalina, Big Sur) 
 <div align="center">
   <img src="./.assets/2025-04-04_Marek_Schiffer_x86_64_Calling_External_2020_Expand.png" alt="Old macOS argv passing" width="700"> 
 
   <div align ="center">
-    <figcaption> Figure 2: Passing of external arguments via stack macOS (2020) </figcaption>
+    <figcaption> Figure 3: Passing of external arguments via stack macOS (2020) </figcaption>
   </div>
   <br> <br>
 </div>
-
 In 2021, on macOS **Catalina** and **Big Sur** the stack needed to be 16 Bytes aligned and the arguments were passed
-rather peculiar with an offest of $+\textbf{24}$ for argc to rsp. See (Figure 2). Making room for 32 Bytes on the local stackframe
+rather peculiar with an offest of $+\textbf{24}$ for argc to rsp. See (Figure 3). Making room for 32 Bytes on the local stackframe
 was probably unnecessary and $\textbf{16}$ Bytes would've sufficed. Nevertheless, I left it in the graph like it worked.
-The passing of the stack has changed at some point before 2023. All on the same machine MacBook Pro (15-inch 2016).
 
+The passing of the stack has changed at some point before 2023. All on the same machine MacBook Pro (15-inch 2016).

@@ -29,7 +29,7 @@
 
 
 .bss
-.equ BUFFER_SIZE, 516
+.equ BUFFER_SIZE, 512
 .lcomm BUFFER_DATA, BUFFER_SIZE
 
 
