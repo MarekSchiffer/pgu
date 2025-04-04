@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./.assets/2025-04-04_Marek_Schiffer_arm64_Calling_External_Expanded" alt="External Calling x86_64" width="700">
+  <img src="./.assets/2025-04-04_Marek_Schiffer_arm64_Calling_External_Expanded.png" alt="External Calling x86_64" width="700">
 
   <div align="center">
     <figcaption> Figure 1: Passing of external arguemts on arm64 via x0 and x1 on macOS. </figcaption>

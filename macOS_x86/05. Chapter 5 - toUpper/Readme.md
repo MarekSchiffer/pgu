@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./.assets/2025-04-04_Marek_Schiffer_x86_64_Calling_External_Expanded" alt="External Calling x86_64" width="700">
+  <img src="./.assets/2025-04-04_Marek_Schiffer_x86_64_Calling_External_Expanded.png" alt="External Calling x86_64" width="700">
 
   <div align="center">
     <figcaption> Figure 1: Passing of external arguemts via stack macOS (2023) </figcaption>
@@ -120,7 +120,7 @@ to convert it to upercase.
 
 ### Old Stack passing
 <div align="center">
-  <img src =./.assets/2025-04-04_Marek_Schiffer_x86_64_Calling_External_2020_Expand" alt="Old macOS argv passing" width="700"> 
+  <img src =./.assets/2025-04-04_Marek_Schiffer_x86_64_Calling_External_2020_Expand.png" alt="Old macOS argv passing" width="700"> 
 
   <div align ="center">
     <figcaption> Figure 2: Passing of external arguments via stack macOS (2020) </figcaption>
