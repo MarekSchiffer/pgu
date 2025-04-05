@@ -25,11 +25,11 @@ to use modern calling convention. We'll get into more detail there.
 <table border="0" align="center">
   <tr>
     <td align="center">
-      <img src="./.assets/2025-03-22_Marek_Schiffer_arm64_Stack_Retraction.gif" alt="Stack Animation arm_64" width="500"><br>
+      <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_arm64_Stack_Retracted.gif" alt="Stack Animation arm_64" width="500"><br>
       <figcaption>Figure 1: Calling a function using the stack; without using stp showing 16 Byte alignment consequences.</figcaption>
     </td>
     <td align="center">
-      <img src="./.assets/2025-03-22_Marek_Schiffer_arm64_Stack_Retraction.gif" alt="Stack Animation arm_64" width="500"><br>
+      <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_arm64Stack_stp_Retracted.gif" alt="Stack Animation arm_64" width="500"><br>
       <figcaption>Figure 2: Second instance of the animation (same as first).</figcaption>
     </td>
   </tr>
@@ -110,28 +110,36 @@ int debugging mode or with optimizations turned off. After the context insensiti
 the optimizer will then get rid of unnecessary operations. A simple but  striking example for that 
 is a generic swap function. 
 
+
 ## Modern calling convention
-As mentioned before on modern systems the first 6 elements in x86_64 are passed
-by registers. Those six registers are, in order
 <div align="center">
+   <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_arm64_modern_calling_Convention.gif" alt="Graph modern calling convention x86_64" width="600">
+   <div align ="center">
+      <figcaption> Figure 2: Modern calling convention on x86_64 </figcaption>
+   </div>
+   <br> <br>
+</div>
+
+As mentioned before on modern systems the first 7 elements on arm64 are passed
+by registers. Those seven registers are, in order
+
 | Argument | Register |
 |----------|----------|
-| 1st      | %rdi     |
-| 2nd      | %rsi     |
-| 3rd      | %rdx     |
-| 4th      | %rcx     |
-| 5th      | %r8      |
-| 6th      | %r9      |
-</div>
-Please note, I didn't have a class of wine when composing this list. 
-Unlike the people creating it. On a more serious note, there are obviously legacy reasons 
-for this obscure convention. Wait, is that an empty bottle of Jack Daniels? 
+| 1st      |    x0    |
+| 2nd      |    x1    |
+| 3rd      |    x2    |
+| 4th      |    x3    |
+| 5th      |    x4    |
+| 6th      |    x5    |
+| 7th      |    x6    |
+| 8th      |    x7    |
+
+Therefore basically, x0-x7. x0 is still the first argument, not the 0th! 
+The return value is still in x0.
 
 We'll go into more detail in Chapter 8, when interacting with C. 
 Every, register that passes a function argument is considered volatile from the
-callers perspective. Additionally, obviously rax as it will hold the return value
-and r10 and r11.
-
+callers perspective. 
 
 DRP, Don't repeat yourself is a fundamental concept in programming.
 Once understood that the CPU just executes one instruction at a time
