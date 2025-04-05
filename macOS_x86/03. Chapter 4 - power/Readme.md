@@ -107,7 +107,16 @@ int debugging mode or with optimizations turned off. After the context insensiti
 the optimizer will then get rid of unnecessary operations. A simple but  striking example for that 
 is a generic swap function. 
 
+
 ## Modern calling convention
+<div align="center">
+   <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_x86_modern_calling_Convention.gif" alt="Graph modern calling convention x86_64" width="700">
+   <div align ="center">
+      <figcaption> Figure 2: Modern calling convention on x86\_64 </figcaption>
+   </div>
+   <br> <br>
+</div>
+
 As mentioned before on modern systems the first 6 elements in x86_64 are passed
 by registers. Those six registers are, in order
 <div align="center">
