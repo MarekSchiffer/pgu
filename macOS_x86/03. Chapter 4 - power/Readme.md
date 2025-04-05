@@ -110,16 +110,16 @@ is a generic swap function.
 
 ## Modern calling convention
 <div align="center">
-   <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_x86_modern_calling_Convention.gif" alt="Graph modern calling convention x86_64" width="700">
+   <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_x86_modern_calling_Convention.gif" alt="Graph modern calling convention x86_64" width="600">
    <div align ="center">
-      <figcaption> Figure 2: Modern calling convention on x86\_64 </figcaption>
+      <figcaption> Figure 2: Modern calling convention on x86_64 </figcaption>
    </div>
    <br> <br>
 </div>
 
 As mentioned before on modern systems the first 6 elements in x86_64 are passed
 by registers. Those six registers are, in order
-<div align="center">
+
 | Argument | Register |
 |----------|----------|
 | 1st      | %rdi     |
@@ -128,7 +128,7 @@ by registers. Those six registers are, in order
 | 4th      | %rcx     |
 | 5th      | %r8      |
 | 6th      | %r9      |
-</div>
+
 Please note, I didn't have a class of wine when composing this list. 
 Unlike the people creating it. On a more serious note, there are obviously legacy reasons 
 for this obscure convention. Wait, is that an empty bottle of Jack Daniels? 
