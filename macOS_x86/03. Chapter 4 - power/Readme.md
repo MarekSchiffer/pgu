@@ -23,7 +23,7 @@ In Chapter 8, we'll call functions from C making it necessary
 to use modern calling convention. We'll get into more detail there. 
 
 <p align="center">
-  <img src="./.assets/2025-03-22_Marek_Schiffer_x86_Stack_Retraction.gif" alt="Stack Animation x86_64" width="700">
+  <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_x86_64_Stack_Retraction.gif" alt="Stack Animation x86_64" width="700">
 
   <div align=center>
     <figcaption>Figure 1: Calling a function using the stack. </figcaption>
