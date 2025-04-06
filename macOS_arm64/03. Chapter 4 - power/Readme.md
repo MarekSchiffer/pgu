@@ -24,14 +24,14 @@ to use modern calling convention. We'll get into more detail there.
 
 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
   <div style="flex: 1 1 calc(50% - 20px); max-width: 500px; text-align: center;">
-    <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_arm64_Stack_Retracted.gif" alt="Stack Animation arm_64" style="width: 100%; height: auto;">
+    <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_arm64_Stack_Retracted.gif" alt="Stack Animation arm_64" style="width: 300; height: auto;">
     <br>
     <figcaption>
       Figure 1: Calling a function using the stack; without using stp showing 16 Byte alignment consequences.
     </figcaption>
   </div>
   <div style="flex: 1 1 calc(50% - 20px); max-width: 500px; text-align: center;">
-    <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_arm64Stack_stp_Retracted.gif" alt="Stack Animation arm_64" style="width: 100%; height: auto;">
+    <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_arm64Stack_stp_Retracted.gif" alt="Stack Animation arm_64" style="width: 300; height: auto;">
     <br>
     <figcaption>
       Figure 2: Calling a function using the stack; by using stp for compactness.
