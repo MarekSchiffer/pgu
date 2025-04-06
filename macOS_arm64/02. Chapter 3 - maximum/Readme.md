@@ -60,7 +60,7 @@ arm64 mnemonics as they're used and not constantly compare to x86_64.
 Assume we have the following array:
 ```asm
 .text
-arryay: .quad 23,6,17,46,52,69
+array: .quad 23,6,17,46,52,69
 ```
 ### Immediate Mode:
 ```asm
