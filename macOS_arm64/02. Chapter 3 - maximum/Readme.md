@@ -67,9 +67,9 @@ array: .quad 23,6,17,46,52,69
 mov x0, #11
 ```
 is called immediate Mode.
-Inserting the address directly into the register.
+Inserting the value immediately into the register.
 
-If we had the address of an array, like the array, we _could_ insert it immediately in a register.
+If we had the address of an array, like the array, we _could_ insert it immediately into a register.
 Again, the 32 Bit limitation kicks in. The mov instruction is an alias for movz (move zero), which
 zeros out the registers and moves. However, it gets an 16 Bit immediate value #imm16 as well as
 a logical shift left (lsl). Opcode 8 Bit, size flag (sf) 1-Bit, one Register 5-Bit, #imm16,
@@ -77,10 +77,10 @@ well, 16-Bit and lsl 2-Bit. Therefore to insert an address into a register, we n
 movk has the same bits as movz and the same shift values 0, 16, 32 & 48.
 ```asm
 mov  x1, #0x4000
-movk x1, #0x0000, lsl #16        <->         movl $0x100004000, %rcx
+movk x1, #0x0000, lsl #16        <->         movq $0x100004000, %rcx
 movk x1, #0x0001, lsl #32
 ```
-After this instruction the address 0x000100004000 will be in register x1. In our
+After this instruction the address 0x100004000 will be in register x1. In our
 example, that's the address of the array. We now, again **could** load the first
 item at that address into register x1 with
 ### Indirect Addressing Mode (Registers)
@@ -100,7 +100,7 @@ a little.
 ```
 The dot . will load the current program counter (pc) into register x1.
 `adr x1, pc` is not allowed. adr is loading the address of . into x1.
-We talk about adr in a minute; for now we manually, calculate the offset to the first
+We talk about adr in a minute; for now we manually, calculate the offset $-0x34$ to the first
 element in the array by adding it to the address and finally we can access the
 element with the indirect addressing mode.  
 
@@ -128,7 +128,7 @@ adr can therefore reach any address within +/- 1MB of the program counter.
 The linker will then replace data_items with the address as an immediate value.
 ### Indirect Addressing Mode (Memory Pages)
 Up until now we had array in our .text section. That's necessary on macOS to
-use ldr or adr. However the .text section is read only on macOS and most other operating systems.
+use ldr or adr with a label. However the .text section is read only on macOS and most other operating systems.
 Storing data takes place in the .data section. So from now on we assume:
 ```asm
 .data
@@ -150,35 +150,38 @@ if pc = 0x100003f50, it will zero out the last 12 Bits to pc = 0x100003000.
 Therefore all instructions with a pc within 4096 Bits (512 Bytes) will yield the same address.
 The 21 Bits are still used to calculate an address but now the 3 Bits are used to space out the target address. i.e
 $4096 * 2^{21} = 2^{12} * 2^{21}$. To get this in GiB, we get $2^{33}/2^{30} = 8$. Making addresses in the 
-range of +/- 4GB accessible. However, not every address since the 4096 were arbitrarily cut short. 
-In practice this means from every given point in the program code, the linker can only access labels 
-in chunks of 512 Bytes. For example if the value would be 1 it would evaluate to 1* 4096 or 0x1000, 
-returning the address 0x100004000. If it were 65537  we would arrive at 65537 * 4096 =  0x10001000 
-and at the address would be 0x110004000 Everything within a page needs to be additionally added. 
-This can be achieved with the help of the assembler directive @pageoff.  
+range of +/- 4GB accessible. However, not every address since the 4096 were arbitrarily cut short.  
 
-The gist is if you want to load the address of array2 and just use adrp you will get the address of 
-array1, because array1 is at the top of the page. In order to get the address of array2 within the page,
-the offset has the be added.
+In practice this means from every given point in the program code, the linker can only access labels 
+in chunks of 512 Bytes. For example if the value would be 1 it would evaluate to $1 * 4096$ or 0x1000, 
+returning the address 0x100004000. If it were 65537  we would arrive at 65537 * 4096 =  0x10001000 
+and at the address would be 0x110004000. Meaning
+```asm
+adrp x1 array1@page
+adrp x1 array2@page
+```
+**will return the same address**, since they're on the same page (within 512 Bytes) only the top of the
+page will be returned. Everything within a page needs to be additionally added.
+This can be achieved with the help of the assembler directive @pageoff.
 ```asm
 adrp x1 array1@page
 add x0, x1, array2@pageoff
 ```
-The assembler directive pageoff will now calculate the #imm16 offset within the page to arrive at the correct label.
-Basically doing, what we did manually before.
+The assembler directive pageoff will now calculate the #imm16 offset within the page and adding it to the top address will
+correctly yield the address of array2.
 ### Global Offset Table (GOT)
 **If the data is stored within the same executable**, the assembly directives page and pageoff are equivalent to the use of 
 gotpage and gotpageoff. i.e
 ```asm
 adrp x1 array1@page               <=>        adrp x1, array1@gotpage
-add x0, x1, array2@pageoff      <=>        ldr x0, [x1 array2@gotpageoff]
+add x0, x1, array2@pageoff        <=>        ldr x0, [x1 array2@gotpageoff]
 ```
 However, the moment array2 is stored in a dynamically linked library, it will only be available at runtime and
 the dynamic linker will populate what is known as a Global Offset Table (GOT). As shown in (Figure 1.2) the GOT within MACO-O 
 is at the beginning of the .data section. That is, so it's in writable memory. Within the executable the linker will resolve
 ```asm
 adrp x1, array2@gotpage
-ldr x0, x1[ array2@gotpageoff]
+ldr x0, [ x1, array2@gotpageoff]
 ```
 with the address at the GOT. The dynamic linker will at runtime populate the memory space in the GOT with the real (virtual)
 address of array2. How to create dynamic libraries and link them will be seen in Chapter 8.
@@ -215,7 +218,7 @@ ldr x0, [x1, #24]!
 ```
 The little "!" will first add 24 to x1 and then dereference it. However, here it 
 will not act like an rvalue and leave x1 unchanged. After the instruction is executed,
-x1 will be updated. This is particularly useful when working with an array when looping through it, 
+x1 will have been updated. This is particularly useful when working with an array when looping through it, 
 like we saw in the maximum example. In the next chapter we'll
 also see how this is used for the stack. 
 ### Post-Indexed Addressing Mode (with write-back)
