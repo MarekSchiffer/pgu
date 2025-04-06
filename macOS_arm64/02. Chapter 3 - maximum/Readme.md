@@ -43,34 +43,33 @@ or leaq. This is not possible in arm64. To be clear, that's not to say arm64 doe
 use RIP. But it does so in a more concealed way, as we'll see.
 
 This comes back to the fact that arm chose to use use 32 Bit
-instructions. The opcode is between 6 and 8 Bits. The maximum
-amount of opcodes is therefore 256. Many tricks are used to
-make this as efficient as possible.
-For ldr and str  That only leaves 21 Bits to address the address[^3]
+instructions. As said before, Bytes are scarce and again clever
+techniques are used to make it work efficiently.
 
 Another difference between x86_64 and arm64 is the use of the word
 move and load. In x86_64 we move something from register to register,
 same in arm64, but we also move something from memory to a register.
-or we even move it from a register to memory.  arm64 uses the menomic 
+or we even move it from a register to memory. arm64 uses the menomic 
 ldr (load) and str (store). Load and Store (str) are in a
-way more precise, as we often follow the idiom load ALU, store. Nevertheless
-if you switch back and forth, it'll drive you mad.
+way more precise, as we often follow the idiom **Load, ALU, Store**. 
+Nevertheless if you switch back and forth, it'll drive you mad.
 The same goes for leaq, Load effective address. This is not the same as ldr in
 arm64 the corresponding mnemonic is adr. In the following we'll simply use the
 arm64 mnemonics as they're used and not constantly compare to x86_64.
 
 Assume we have the following array:
-```
-list: .quad 23,6,17,46,52,69
+```asm
+.text
+arryay: .quad 23,6,17,46,52,69
 ```
 ### Immediate Mode:
 ```asm
 mov x0, #11
 ```
 is called immediate Mode.
-* Inserting the address directly into the register * \
+Inserting the address directly into the register.
 
-If we had the address of an array, like the list, we _could_ insert it immediately in a register.
+If we had the address of an array, like the array, we _could_ insert it immediately in a register.
 Again, the 32 Bit limitation kicks in. The mov instruction is an alias for movz (move zero), which
 zeros out the registers and moves. However, it gets an 16 Bit immediate value #imm16 as well as
 a logical shift left (lsl). Opcode 8 Bit, size flag (sf) 1-Bit, one Register 5-Bit, #imm16,
@@ -82,7 +81,7 @@ movk x1, #0x0000, lsl #16        <->         movl $0x100004000, %rcx
 movk x1, #0x0001, lsl #32
 ```
 After this instruction the address 0x000100004000 will be in register x1. In our
-example, that's the address of the list item. We now, again **could** load the first
+example, that's the address of the array. We now, again **could** load the first
 item at that address into register x1 with
 ### Indirect Addressing Mode (Registers)
 ```asm
@@ -92,7 +91,7 @@ Here, the address in x1 is dereferenced and the value at that address is loaded 
 Always keep in mind, many steps are necessary to fulfill this one assembly instruction.
 This example  will only work, if we run it in a debugger like lldb. The debugger will
 not use Address Space Layout Randomization (ASLR). Apple does; and since we're not
-allowed to statically link, the address of the list will always be randomly shifted,
+allowed to statically link, the address of the array will always be randomly shifted,
 every time the program is run. We can still use a trick to make it work, at least
 a little.
 ```asm
@@ -100,26 +99,27 @@ a little.
  add x1, x1, #-0x34
 ```
 The dot . will load the current program counter (pc) into register x1.
-adr x1, pc is not allowed. adr is loading the address of . into x1.
-We talk about adr in a minute. For now we then manually, calculate the offset to the first
-element in the list by adding it to the address and finally we can access the
-element with the indirect addressing mode. 
+`adr x1, pc` is not allowed. adr is loading the address of . into x1.
+We talk about adr in a minute; for now we manually, calculate the offset to the first
+element in the array by adding it to the address and finally we can access the
+element with the indirect addressing mode.  
+
 This is essentially doing manually, what position independent code will do using IP/PC-Relative.
 On arm64 it's called PC-Relative, because here it's called the program counter not Instruction Pointer.
 ## PC-Relative Addressing Mode
 ### Literal load using PC-Relative ( Relative Addressing Mode movq(%rip) )
-Now, that we have the hacks out of the way, let's look how we could load the first element of the list into a register normally.
+Now, that we have the hacks out of the way, let's look how we could load the first element of the array into a register normally.
 ```asm
- ldr x0, list
+ ldr x0, array
 ```
-will load the first element at the address of list into register x0.
+will load the first element at the address of array into register x0.
 This is therefore called literal load using PC-Relative. The important part
 to remember is that the value will be loaded into x0, not the address.
 ### Indirect Addressing Mode (Memory)
-If we don't want the first element but rather the address of list we can
+If we don't want the first element but rather the address of array we can
 use the command adr
 ```asm
-adr x1, list
+adr x1, array
 ldr x0, [x1]
 ```
 adr is a 6-Bit opcode (5-Bit + SF), uses one Register (5-Bit) and 21 Bits to
@@ -127,33 +127,42 @@ load the address. $2^{21}/1024 = 2048 = 2$MiB or 2MB for non nerds.
 adr can therefore reach any address within +/- 1MB of the program counter.
 The linker will then replace data_items with the address as an immediate value.
 ### Indirect Addressing Mode (Memory Pages)
-Up until now we had list in our .text section. That's necessary on macOS to
-use ldr or adr. However the .text section is read only on macOS and most other operating systems. 
-Storing data takes place in the .data section.
+Up until now we had array in our .text section. That's necessary on macOS to
+use ldr or adr. However the .text section is read only on macOS and most other operating systems.
+Storing data takes place in the .data section. So from now on we assume:
+```asm
+.data
+array1: .quad 23,6,17,46,52,69
+array2: .quad 44,2,83,15,27,12
+```
 To access data in the .data section, we use the command adrp address pages.
 Memory on arm machines is separated into pages. Normally 4KB wide. To
 get the address into a register, we proceed as follows:
 ```asm
-adrp x1 list@page
+adrp x1 array1@page
 ```
-Please note the part @page is an assembler directive. adrp works differently than adr. 
+Please note the part @page is an assembler directive. adrp works differently than adr.
 As adr, adrp has a 6-Bit opcode (5-Bit + SF), uses one register (5-Bit) and has 21 Bits left 
 to load an address. So what does it do differently than adr?  
 
 First, it truncates the last 3 Bytes (12-Bit) to get to an even page number. For example,
-if pc = 0x0000000100003f50, it will zero out the last 12 Bits to pc = 0x0000000100003000.
+if pc = 0x100003f50, it will zero out the last 12 Bits to pc = 0x100003000.
 Therefore all instructions with a pc within 4096 Bits (512 Bytes) will yield the same address.
 The 21 Bits are still used to calculate an address but now the 3 Bits are used to space out the target address. i.e
 $4096 * 2^{21} = 2^{12} * 2^{21}$. To get this in GiB, we get $2^{33}/2^{30} = 8$. Making addresses in the 
 range of +/- 4GB accessible. However, not every address since the 4096 were arbitrarily cut short. 
 In practice this means from every given point in the program code, the linker can only access labels 
 in chunks of 512 Bytes. For example if the value would be 1 it would evaluate to 1* 4096 or 0x1000, 
-returning the address 0x0000000100004000. If it were 65537  we would arrive at 65537 * 4096 =  0x10001000 
-and at the address would be 0x0000000110004000 Everything within a page needs to be additionally added. 
-This can be achieved with the help of the assembler directive @pageoff.
+returning the address 0x100004000. If it were 65537  we would arrive at 65537 * 4096 =  0x10001000 
+and at the address would be 0x110004000 Everything within a page needs to be additionally added. 
+This can be achieved with the help of the assembler directive @pageoff.  
+
+The gist is if you want to load the address of array2 and just use adrp you will get the address of 
+array1, because array1 is at the top of the page. In order to get the address of array2 within the page,
+the offset has the be added.
 ```asm
-adrp x1 list@page
-add x1, x1, list@pageoff
+adrp x1 array1@page
+add x0, x1, array2@pageoff
 ```
 The assembler directive pageoff will now calculate the #imm16 offset within the page to arrive at the correct label.
 Basically doing, what we did manually before.
@@ -161,18 +170,22 @@ Basically doing, what we did manually before.
 **If the data is stored within the same executable**, the assembly directives page and pageoff are equivalent to the use of 
 gotpage and gotpageoff. i.e
 ```asm
-adrp x1 list@page               <=>        adrp x1, list@gotpage
+adrp x1 array1@page               <=>        adrp x1, array1@gotpage
 add x0, x1, array2@pageoff      <=>        ldr x0, [x1 array2@gotpageoff]
 ```
 However, the moment array2 is stored in a dynamically linked library, it will only be available at runtime and
-and the dynamic linker will populate what is known as a Global Offset Table (GOT). As shown the GOT within the MACO-O is at
-the beginning of the .data section. That is, so that it's writable memory. Within the executalbe the linker will resolve
+the dynamic linker will populate what is known as a Global Offset Table (GOT). As shown in (Figure 1.2) the GOT within MACO-O 
+is at the beginning of the .data section. That is, so it's in writable memory. Within the executable the linker will resolve
 ```asm
 adrp x1, array2@gotpage
 ldr x0, x1[ array2@gotpageoff]
 ```
-with the address of the GOT. The dynamic linker will at runtime poplulate the memory address space in the GOT with the real (virtual)
+with the address at the GOT. The dynamic linker will at runtime populate the memory space in the GOT with the real (virtual)
 address of array2. How to create dynamic libraries and link them will be seen in Chapter 8.
+
+## More Addressing Modes
+Up to this point, we were concerned how to get the address of an element in the .data section into a register.
+Now that we have that, it's free sailing from here to get elements at that address.
 
 ### Base Pointer Addressing Mode
 Now, we have the bulk out of the way. We can store data in the .data section
@@ -181,23 +194,23 @@ we want to access an array. If we declare the array as .quad, each element will
 be 8 Bytes long. To access the 3rd element we need to add 3 Bytes (24-Bit) to the base
 address. We can do that with an base pointer offset.
 ```asm
-adrp x1, list@page
+adrp x1, array1@page
 mov x2, #24
 ldr x0, [x1,x2]
 ```
 Symbolically we'll have [ x1 + x2 ]  = [ 0x100004000 + 0x18] = [ 0x100004018] and after dereferencing we'll get the value at that address. A similar effect can be achived with
 ### Immediate Offset Addressing
 ```asm
-adrp x1, list@page
+adrp x1, array1@page
 ldr x0, [x1, #24]
 ```
 This means, take the address of x1, add 24 to it, then dereference and load the element at
 that address into x0. If the address in x1 is the same as above, we'll get the same value into x0.
-### Pre-Indexed Addressing Mode ( with write-back)
+### Pre-Indexed Addressing Mode ( with write-back )
 Pre Indexed Addressing Mode is accomplished by a bang or exclamation mark,
 whatever you prefer.
 ```asm
-adrp x1, list@page
+adrp x1, array1@page
 ldr x0, [x1, #24]!
 ```
 The little "!" will first add 24 to x1 and then dereference it. However, here it 
@@ -209,7 +222,7 @@ also see how this is used for the stack.
 On the same token the current address can also be used first to load the value into
 a register and then be increased/decreased. That's called Post-Indexed Addressing Mode.
 ```asm
-adrp x1, list@page
+adrp x1, array1@page
 ldr x2, [x1], #32
 ldr x0, [x1]
 ```
@@ -218,7 +231,7 @@ In this example the address at x1 is first dereferenced and loaded into x2 befor
 Finally we  look at a few more obfuscated arm instructions. If you just want to access one
 element in and an array by index, you can scale the index with the
 ```asm
-adrp x1, list@page
+adrp x1, array1@page
 mov x2, #17
 ldr x0, [x1, x2, lsl #3]
 ```
@@ -233,7 +246,7 @@ for some reason they messed it up. On 64-Bit machines a word is only 32-Bit long
 array in the maximum program 8 bytes long. The values were all between [1,255] so a byte would've sufficed. macOS is a little endian system. That means the values in the registers are
 big endian but in memory the **Byte** order is reversed. With that said, if we write the following:
 ```asm
-adrp x1, list@page
+adrp x1, array1@page
 mov x2, #17
 ldr w0, [x1, x2, lsl #2]
 ```
@@ -248,7 +261,7 @@ int s = *(((short*)(&array[0])) + 17);
 ```
 But, don't worry it doesn't stop here, we can also hop foreword in halfword steps (2 Bytes)
 ```asm
-adrp x1, list@page
+adrp x1, array1@page
 mov x2, #17
 ldrh w0, [x1, x2, lsl #1]
 ```
