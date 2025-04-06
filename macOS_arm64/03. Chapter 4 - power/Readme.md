@@ -23,21 +23,21 @@ In Chapter 8, we'll call functions from C making it necessary
 to use modern calling convention. We'll get into more detail there. 
 
 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
-  <div style="text-align: center;">
-    <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_arm64_Stack_Retracted.gif" alt="Stack Animation arm_64" style="width: 300px; height: auto;">
-    <br>
-    <figcaption>
+  <div style="flex: 1 1 300px; max-width: 300px; text-align: center;">
+    <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_arm64_Stack_Retracted.gif" alt="Stack Animation arm_64" style="width: 100%; height: auto;">
+    <figcaption style="margin-top: 8px; font-style: italic; font-size: 0.9em;">
       Figure 1: Calling a function using the stack; without using stp showing 16 Byte alignment consequences.
     </figcaption>
   </div>
-  <div style="text-align: center;">
-    <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_arm64Stack_stp_Retracted.gif" alt="Stack Animation arm_64" style="width: 300px; height: auto;">
-    <br>
-    <figcaption>
+
+  <div style="flex: 1 1 300px; max-width: 300px; text-align: center;">
+    <img src="./.assets/2025-03-22_Marek_Schiffer_Animation_arm64Stack_stp_Retracted.gif" alt="Stack Animation arm_64" style="width: 100%; height: auto;">
+    <figcaption style="margin-top: 8px; font-style: italic; font-size: 0.9em;">
       Figure 2: Second instance of the animation (same as first).
     </figcaption>
   </div>
 </div>
+
 
 # The Stack
 Every program on modern hardware "thinks" it owns all of memory. This little
