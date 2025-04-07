@@ -278,32 +278,6 @@ ldrb w0, [x1, x2, lsl #0]
 Here the lsl #0 can be omitted and normally will. As before it means $2^0 = 1$.
 This time we hope forward in memory in bytes 
 `[ 0x100004000 + (0x11 * 0x1 )]   = [ 0x100004011]` . 
-## Branching ( cmp and flags)
-```asm
-.text
-.global _start
-_start:
-
-   mov x1, #17
-   mov x2, #23
-
-   cmp x1, x2          ; x1 <= x2
-   b.le if_case        ; x1 <= x2 ? x1 : x2;
-
-   mov x0, x2
-   b end_program
-
-   if_case:
-   mov x0, x1
-
-end_program:
-   mov x16, #1
-   svc #0x80
-```
-Here we demonstrate a simple if statement. Comparing the code flow with an usual if statement if C, we see that the operations are flipped. 
-If the condition evaluates to `true` we jump over the else condition to the if clause. We also need to take care to not execute the if clause if we fall through and executes the else clause. As outlined above, without a branch condition the The Fetch-Execution-Cycle executes one instruction at a time like clockwork.
-
-Again the cmp command is an alias for subs, subtract extended and scaled register, setting flags. cmp will therefore be substituted with `subs xzr, x1, x2` and since we read from right to left, x2 will be subtracted from x1. $\text{x1}-\text{x2}$. Therefore if x2 is greater then x1, $\text{x1}-\text{x2} > 0 \Leftrightarrow \text{x1} < text{x2}$.
 # Branching
 Branching is the ability for a computer to execute instructions in memory one
 at a time and react to certain conditions and branch out into other parts of the
@@ -434,6 +408,34 @@ two's complement. 1 means negative, 0 means positive. If the number is negative 
 of the cmp operation will update the conditional flag register will be set. The next opcode will then check if the appropriate condition
 is met or not and based upon that update the instruction pointer and follow the code path.
 
+
+## Branching (Practical)
+```asm
+.text
+.global _start
+_start:
+
+   mov x1, #17
+   mov x2, #23
+
+   cmp x1, x2          ; x1 <= x2
+   b.le if_case        ; x1 <= x2 ? x1 : x2;
+
+   mov x0, x2
+   b end_program
+
+   if_case:
+   mov x0, x1
+
+end_program:
+   mov x16, #1
+   svc #0x80
+```
+
+Here we demonstrate a simple if statement. Comparing the code flow with an usual if statement if C, we see that the operations are flipped. 
+If the condition evaluates to `true` we jump over the else condition to the if clause. We also need to take care to not execute the if clause if we fall through and executes the else clause. As outlined above, without a branch condition the The Fetch-Execution-Cycle executes one instruction at a time like clockwork.
+
+Again the cmp command is an alias for subs (subtract extended and scaled register, setting flags). cmp will therefore be substituted with `subs xzr, x1, x2` and since we read from right to left, x2 will be subtracted from x1. $\text{x1}-\text{x2}$. Therefore if x2 is greater then x1, $\text{x1}-\text{x2} > 0 \Leftrightarrow \text{x1} > \text{x2}$.
 
 [^1]: The Address Bus Low and Address Bus High for the 6502.
 [^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch-Execution Cycle, the assembler would simply subtract that number and place the correct one in the opcode. All of that would depend on how the CPU is "wired" together.

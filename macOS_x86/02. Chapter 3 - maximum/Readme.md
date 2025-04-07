@@ -90,32 +90,6 @@ movq $3, %rdi
 movq 8(%rcx,%rdi,4), %rdx
 ```
 To reach the 52.
-## Branching (Practical)
-```asm
-.text
-.global _start
-_start:
-   movq $25, %rax
-   movq $23, %rbx
-
-   cmpq %rbx, %rax       # %rbx >= %rax
-   jle if_case           # (rax <= rbx ) ? rax : rbx;
-
-   movq %rbx, %rdi
-   jmp end_program
-   if_case:
-   movq %rax, %rdi
-
-end_program:
-   movq $0x2000001, %rax
-   syscall
-```
-Here we demonstrate a simple if statement. The quirk of 
-AT&T syntax is that the comparison in the cmp statement has to be read from right to left (see comment). Based on the comparision result the carry flag will be set within the rflags register. 
-
-The reason for the quirky notation is that cmpq is just
-another name for subq. Since `subq %rbx, %rax` means $\text{rax}-\text{rbx}$, $rax<0$ if $\text{rbx} > \text{rax}$
-And accordingly if they're equal or $\text{rbx} < \text{rax}. 
 # Branching
 Branching is the ability for a computer to execute instructions in memory one
 at a time and react to certain conditions and branch out into other parts of the
@@ -246,6 +220,37 @@ two's complement. 1 means negative, 0 means positive. If the number is negative 
 of the cmp operation will update the conditional flag register will be set. The next opcode will then check if the appropriate condition
 is met or not and based upon that update the instruction pointer and follow the code path.
 
+
+## Branching (Practical)
+```asm
+.text
+.global _start
+_start:
+   movq $25, %rax
+   movq $23, %rbx
+
+   cmpq %rbx, %rax       # %rbx >= %rax
+   jle if_case           # (rax <= rbx ) ? rax : rbx;
+
+   movq %rbx, %rdi
+   jmp end_program
+   if_case:
+   movq %rax, %rdi
+
+end_program:
+   movq $0x2000001, %rax
+   syscall
+```
+
+Here we demonstrate a simple if statement. Comparing the code flow with an usual if statement if C, we see that the operations are flipped. 
+If the condition evaluates to `true` we jump over the else condition to the if clause. We also need to take care to not execute the if clause if we fall through and executes the else clause. As outlined above, without a branch condition the The Fetch-Execution-Cycle executes one instruction at a time like clockwork.
+
+The quirk of AT&T syntax is that the comparison in the cmp statement has to be read from right to left (see comment).
+Based on the comparision result the carry flag will be set within the rflags register.
+
+The reason for the quirky notation is that cmpq is just
+another name for subq. Since `subq %rbx, %rax` means $\text{rax}-\text{rbx}$, $rax<0$ if $\text{rbx} > \text{rax}$
+And accordingly if they're equal or $\text{rbx} < \text{rax}.
 
 [^1]: The Address Bus Low and Address Bus High for the 6502.
 [^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch-Execution Cycle, the assembler would simply subtract that number and place the correct one in the opcode. All of that would depend on how the CPU is "wired" together.
