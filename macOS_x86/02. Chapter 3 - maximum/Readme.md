@@ -17,7 +17,7 @@ Behind the curtain this chapter is about two things
 In some way this is the main topic of this task.
 Assume we have the following array, like in maximum
 ```
-data_items: .quad 23,6,17,46,52,69
+list: .quad 23,6,17,46,52,69
 ```
 ## Immediate Addressing Mode
 ```
@@ -29,7 +29,7 @@ This is a direct consequence of the von Neumann architecture.
 ![](https://github.com/MarekSchiffer/pgu/blob/main/macOS_x86/02.%20Chapter%203%20-%20maximum/Screenshots/Addressing_macOS.png)
 * Inserting the address directly into the register * \
 \
-If we had the address of an array, like your data\_items, we can insert it immediately in a register
+If we had the address of an array, like your list, we can insert it immediately in a register
 ```
 movl $0x100001000, %rcx
 ```
@@ -46,23 +46,23 @@ tbe value at that address on the BUS and captures it in edx.
 Et voila!
 ## IP-Relative Addressing Mode
 ![](https://github.com/MarekSchiffer/pgu/blob/main/macOS_x86/02.%20Chapter%203%20-%20maximum/Screenshots/RIP-Relative_macOS.png)
-* data\_itmes(%rip) gets replaced by 15(%rip). We can check, that 0xff1+0x15 is indeed 0x1000 *
+* list(%rip) gets replaced by 15(%rip). We can check, that 0xff1+0x15 is indeed 0x1000 *
 Under macOS Direct Addressing Mode is not supported anymore. Instead
 IP-Relative Addressing Mode is used.
 ```
-leaq data_items(%rip), %rcx
+leaq list(%rip), %rcx
 movq (%rcx), %rdx
 ```
-lea stand for "Load Effective Address". \
+lea stand for "Load Effective Address".  
 
 In IP-Relative Addressing Mode, the address is calculated by the relative
 offset to the instruction pointer (ip). This is entirely different from
-the Absolute Addressing Mode. Here the prefix data\_items, will be calculated
- to the difference or offset to the address of data\_items. See (Figure 2).  \
+the Absolute Addressing Mode. Here the prefix list, will be calculated
+ to the difference or offset to the address of list. See (Figure 2).  
 
 We can also move the item directly into the register with
 ```
-movq data_items(%rip), %rdx
+movq list(%rip), %rdx
 ```
 This gives us again the value 23 in register rdx.
 ## Base Pointer Addressing Mode
@@ -70,7 +70,7 @@ Once we have the address in a register, we can use the base
 pointer addressing mode to add a constant to the address and
 hop forward in memory
 ```
-leaq data_items(%rip), %rcx
+leaq list(%rip), %rcx
 movq 8(%rcx), %rdx
 ```
 We now have the 6 in register rdx. Notice that the 8 gets "pulled in" the
@@ -78,14 +78,14 @@ parenthesis. Symbolically the expression gets evaluated to (%rcx+8) and the Indi
 ## Indexed Addressing Mode
 Additionally to the prefix offset, we can add a counting register with a multiplier:
 ```
-leaq data_items(%rip), %rcx
+leaq list(%rip), %rcx
 movq $3, %rdi
 movq (%rcx,%rdi,8), %rdx
 ```
 This moves the 46 in %rdx. (%rcx+3\*8).
 Additionally, we can use the pre offset:
 ```
-leaq data_items(%rip), %rcx
+leaq list(%rip), %rcx
 movq $3, %rdi
 movq 8(%rcx,%rdi,4), %rdx
 ```
@@ -97,9 +97,9 @@ To reach the 52.
 _start:
    movq $25, %rax
    movq $23, %rbx
- 
+
    cmpq %rbx, %rax       # %rbx >= %rax
-   jle if_case          # (rax <= rbx ) ? rax : rbx;
+   jle if_case           # (rax <= rbx ) ? rax : rbx;
 
    movq %rbx, %rdi
    jmp end_program
@@ -110,6 +110,12 @@ end_program:
    movq $0x2000001, %rax
    syscall
 ```
+Here we demonstrate a simple if statement. The quirk of 
+AT&T syntax is that the comparison in the cmp statement has to be read from right to left (see comment). Based on the comparision result the carry flag will be set within the rflags register. 
+
+The reason for the quirky notation is that cmpq is just
+another name for subq. Since `subq %rbx, %rax` means $\text{rax}-\text{rbx}$, $rax<0$ if $\text{rbx} > \text{rax}$
+And accordingly if they're equal or $\text{rbx} < \text{rax}. 
 # Branching
 Branching is the ability for a computer to execute instructions in memory one
 at a time and react to certain conditions and branch out into other parts of the
