@@ -145,7 +145,8 @@ The dot . will load the current program counter (pc) into register x1.
  offset $0x6c$ to the address of the first element in the array by adding it to the address of the program counter.
 Finally we end up with the correct address in x1 and can access the first element with the indirect addressing mode.  
 
-This is essentially doing manually, what position independent code will do using IP/PC-Relative.
+
+This is essentially doing manually, what **position independent code** will do using IP/PC-Relative.
 On arm64 it's called PC-Relative, because here it's called the program counter not Instruction Pointer.
 
 ### Indirect Addressing Mode (Memory Pages)
@@ -213,18 +214,8 @@ address of array2. How to create dynamic libraries and link them will be seen in
 Up to this point, we were concerned how to get the address of an element in the .data section into a register.
 Now that we have that, it's free sailing from here to get elements at that address.
 
-### Base Pointer Addressing Mode
 Now, we have the bulk out of the way. We can store data in the .data section
-and get the address back into a register to work with. Now, let's assume
-we want to access an array. If we declare the array as .quad, each element will
-be 8 Bytes long. To access the 3rd element we need to add 3 Bytes (24-Bit) to the base
-address. We can do that with an base pointer offset.
-```asm
-adrp x1, array1@page
-mov x2, #24
-ldr x0, [x1,x2]
-```
-Symbolically we'll have [ x1 + x2 ]  = [ 0x100004000 + 0x18] = [ 0x100004018] and after dereferencing we'll get the value at that address. A similar effect can be achived with
+and get the address back into a register to work with. 
 ### Immediate Offset Addressing
 ```asm
 adrp x1, array1@page
@@ -253,6 +244,18 @@ ldr x2, [x1], #32
 ldr x0, [x1]
 ```
 In this example the address at x1 is first dereferenced and loaded into x2 before 32 gets added to x1. We'll use a close relative of this instruction in the next chapter in the context of the stack usage.
+
+### Base Pointer Addressing Mode
+Now, let's assume we want to access an array. If we declare the array as .quad, each element will
+be 8 Bytes long. To access the 3rd element we need to add 3 Bytes (24-Bit) to the base
+address. We can do that with an base pointer offset.
+```asm
+adrp x1, array1@page
+mov x2, #24
+ldr x0, [x1,x2]
+```
+Symbolically we'll have [ x1 + x2 ]  = [ 0x100004000 + 0x18] = [ 0x100004018] and after dereferencing we'll get the value at that address. A similar effect can be achived with
+
 ### Indirect indexed  Addressing Mode with Scaling (Memory)
 Finally we  look at a few more obfuscated arm instructions. If you just want to access one
 element in and an array by index, you can scale the index with the
