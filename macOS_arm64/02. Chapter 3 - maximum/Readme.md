@@ -43,7 +43,7 @@ calculate addresses directly by adding %rip to the label for either movq
 or leaq. This is not possible in arm64. To be clear, that's not to say arm64 doesn't
 use RIP. But it does so in a more concealed way, as we'll see.
 
-This comes back to the fact that arm chose to use use 32 Bit
+This comes back to the fact that arm chose to use 32 Bit
 instructions. As said before, Bytes are scarce and again clever
 techniques are used to make it work efficiently.
 
@@ -53,10 +53,10 @@ same in arm64, but we also move something from memory to a register.
 or we even move it from a register to memory. arm64 uses the menomic 
 ldr (load) and str (store). Load and Store (str) are in a
 way more precise, as we often follow the idiom **Load, ALU, Store**. 
-Nevertheless if you switch back and forth, it'll drive you mad.
+Nevertheless, if you switch back and forth, it'll drive you mad.
 The same goes for leaq, Load effective address. This is not the same as ldr in
 arm64 the corresponding mnemonic is adr. In the following we'll simply use the
-arm64 mnemonics as they're used and not constantly compare to x86_64.
+arm64 mnemonics as they're used and mostly not constantly make the  comparison to x86_64.
 
 Assume we have the following array:
 ```asm
@@ -70,43 +70,6 @@ mov x0, #11
 is called immediate Mode.
 Inserting the value immediately into the register.
 
-If we had the address of an array, like the array, we _could_ insert it immediately into a register.
-Again, the 32 Bit limitation kicks in. The mov instruction is an alias for movz (move zero), which
-zeros out the registers and moves. However, it gets an 16 Bit immediate value #imm16 as well as
-a logical shift left (lsl). Opcode 8 Bit, size flag (sf) 1-Bit, one Register 5-Bit, #imm16,
-well, 16-Bit and lsl 2-Bit. Therefore to insert an address into a register, we need mov and movk (move keep)
-movk has the same bits as movz and the same shift values 0, 16, 32 & 48.
-```asm
-mov  x1, #0x4000
-movk x1, #0x0000, lsl #16        <->         movq $0x100004000, %rcx
-movk x1, #0x0001, lsl #32
-```
-After this instruction the address 0x100004000 will be in register x1. In our
-example, that's the address of the array. We now, again **could** load the first
-item at that address into register x1 with
-### Indirect Addressing Mode (Registers)
-```asm
-ldr x0, [x1]                  <->           movq %(rax), %rdi
-```
-Here, the address in x1 is dereferenced and the value at that address is loaded into x0.
-Always keep in mind, many steps are necessary to fulfill this one assembly instruction.
-This example  will only work, if we run it in a debugger like lldb. The debugger will
-not use Address Space Layout Randomization (ASLR). Apple does; and since we're not
-allowed to statically link, the address of the array will always be randomly shifted,
-every time the program is run. We can still use a trick to make it work, at least
-a little.
-```asm
- adr x1, .
- add x1, x1, #-0x34
-```
-The dot . will load the current program counter (pc) into register x1.
-`adr x1, pc` is not allowed. adr is loading the address of . into x1.
-We talk about adr in a minute; for now we manually, calculate the offset $-0x34$ to the first
-element in the array by adding it to the address and finally we can access the
-element with the indirect addressing mode.  
-
-This is essentially doing manually, what position independent code will do using IP/PC-Relative.
-On arm64 it's called PC-Relative, because here it's called the program counter not Instruction Pointer.
 ## PC-Relative Addressing Mode
 ### Literal load using PC-Relative ( Relative Addressing Mode movq(%rip) )
 Now, that we have the hacks out of the way, let's look how we could load the first element of the array into a register normally.
@@ -121,54 +84,113 @@ If we don't want the first element but rather the address of array we can
 use the command adr
 ```asm
 adr x1, array
-ldr x0, [x1]
 ```
 adr is a 6-Bit opcode (5-Bit + SF), uses one Register (5-Bit) and 21 Bits to
-load the address. $2^{21}/1024 = 2048 = 2$MiB or 2MB for non nerds.
+load the address. $2^{21}/1024 = 2048 = 2$ MiB or 2MB for non nerds.
 adr can therefore reach any address within +/- 1MB of the program counter.
-The linker will then replace data_items with the address as an immediate value.
-### Indirect Addressing Mode (Memory Pages)
-Up until now we had array in our .text section. That's necessary on macOS to
+The linker will then replace array with the address as an immediate value.
+
+To now get the value at that address we use 
+### Indirect Addressing Mode (Registers)
+```asm
+ldr x0, [x1]                  <->           movq %(rax), %rdi
+```
+Here, the address in x1 is dereferenced and the value at that address is loaded into x0.
+Always keep in mind, many steps are necessary to fulfill this one assembly instruction.
+This example  will only work, if we run it in a debugger like lldb. The debugger will
+not use **Address Space Layout Randomization (ASLR)**. Apple does; and since we're not
+allowed to statically link, the address of the array will always be randomly shifted,
+every time the program is run. We can still use a trick to make it work, at least
+a little.  
+
+Up until know, we had our array in the the `.text` section. That's necessary on macOS to
 use ldr or adr with a label. However the .text section is read only on macOS and most other operating systems.
 Storing data takes place in the .data section. So from now on we assume:
+
+```asm
+mov x2, #99
+str x2, [x1]
+```
+will, end in a **BUS error**, as it should as we're trying to write to memory, we're not allowed to.
+Form this point on, let's assume the array is in the `.data` section.
 ```asm
 .data
 array1: .quad 23,6,17,46,52,69
 array2: .quad 44,2,83,15,27,12
 ```
+The ldr and adr commands from above no longer work. So how do we get the address of array1 into 
+a register?
+
+If we had the address of an array, like array1, we _could_ insert it immediately into a register.
+Again, the 32 Bit limitation kicks in. The mov instruction is an alias for movz (move zero), which
+zeros out the registers and moves. However, it gets an 16 Bit immediate value #imm16 as well as
+a logical shift left (lsl). Opcode 8 Bit, size flag (sf) 1-Bit, one Register 5-Bit, #imm16,
+well, 16-Bit and lsl 2-Bit. Therefore to insert an address into a register, we need mov and movk (move keep)
+movk has the same bits as movz and the same shift values 0, 16, 32 & 48.
+```asm
+mov  x1, #0x4000
+movk x1, #0x0000, lsl #16        <->         movq $0x100004000, %rcx
+movk x1, #0x0001, lsl #32
+```
+After this instruction the address 0x100004000 will be in register x1. In our
+example, that's the address of the array. We now, again **could** load the first
+item at that address into register x1 with
+
+```asm
+ adr x1, .
+ add x1, x1, #0x6c
+```
+The dot . will load the current program counter (pc) into register x1.
+`adr x1, pc` is **not** allowed! To now get the address of array1, we manually, calculate the
+ offset $0x6c$ to the address of the first element in the array by adding it to the address of the program counter.
+Finally we end up with the correct address in x1 and can access the first element with the indirect addressing mode.  
+
+This is essentially doing manually, what position independent code will do using IP/PC-Relative.
+On arm64 it's called PC-Relative, because here it's called the program counter not Instruction Pointer.
+
+### Indirect Addressing Mode (Memory Pages)
 To access data in the .data section, we use the command adrp address pages.
 Memory on arm machines is separated into pages. Normally 4KB wide. To
 get the address into a register, we proceed as follows:
 ```asm
 adrp x1 array1@page
 ```
-Please note the part @page is an assembler directive. adrp works differently than adr.
-As adr, adrp has a 6-Bit opcode (5-Bit + SF), uses one register (5-Bit) and has 21 Bits left 
-to load an address. So what does it do differently than adr?  
-
-First, it truncates the last 3 Bytes (12-Bit) to get to an even page number. For example,
-if pc = 0x100003f50, it will zero out the last 12 Bits to pc = 0x100003000.
-Therefore all instructions with a pc within 4096 Bits (512 Bytes) will yield the same address.
-The 21 Bits are still used to calculate an address but now the 3 Bits are used to space out the target address. i.e
-$4096 * 2^{21} = 2^{12} * 2^{21}$. To get this in GiB, we get $2^{33}/2^{30} = 8$. Making addresses in the 
-range of +/- 4GB accessible. However, not every address since the 4096 were arbitrarily cut short.  
-
-In practice this means from every given point in the program code, the linker can only access labels 
-in chunks of 512 Bytes. For example if the value would be 1 it would evaluate to $1 * 4096$ or 0x1000, 
-returning the address 0x100004000. If it were 65537  we would arrive at 65537 * 4096 =  0x10001000 
-and at the address would be 0x110004000. Meaning
+@page is an assembler directive. That does what we did before manually. The assembler calculates
+the difference from pc to the page memory position of the array and loads that address into x1.
+So, what's the page talk all about? Let's assume we do 
 ```asm
-adrp x1 array1@page
+adrp x0 array1@page
 adrp x1 array2@page
 ```
-**will return the same address**, since they're on the same page (within 512 Bytes) only the top of the
-page will be returned. Everything within a page needs to be additionally added.
+Now, x0 holds the address of array1 and x1 holds the address of array2, right? Wrong!
+adrp only calculates the address within a page. Since array1 and array2 are on the same page (within 512 Bytes),
+**both instructions will return the same address of array1**.
+
+### adrp (What is a page)
+adrp has a 6-Bit opcode (5-Bit + SF), uses one register (5-Bit) and has 21 Bits left 
+to load an address. So what does it do differently than adr?
+
+First, it truncates the last 3 digits (12-Bit) to get to an even page number. 
+For example,
+if pc = 0x100003f50, it will zero out the last 12 Bits to pc = 0x100003000.
+Therefore all instructions with a pc within $2^{12} = 4096$ Bits (512 Bytes) will yield the same address.
+All 21 Bits are still used to calculate an address but now the 12 Bits are used to space out the target address. 
+i.e $4096 * 2^{21} = 2^{12} * 2^{21} = 2^{33}$. To get this in GiB, we get $2^{33}/2^{30} = 8$ GiB. Making 
+addresses in the range of +/- 4GiB accessible. However, not every address since the 4096 war arbitrarily cut short.  
+
+This means from every given point in the program code, the linker can only access labels
+in chunks of 512 Bytes. For example if the value would be 1 it would evaluate to $1 * 4096$ or 0x1000, 
+returning the address 0x100004000. If it were 65537  we would arrive at 65537 * 4096 =  0x10001000 
+and at the address would be 0x110004000.  
+
+### pageoff
+Everything within a page needs to be additionally added.
 This can be achieved with the help of the assembler directive @pageoff.
 ```asm
 adrp x1 array1@page
 add x0, x1, array2@pageoff
 ```
-The assembler directive pageoff will now calculate the #imm16 offset within the page and adding it to the top address will
+The assembler directive pageoff will now calculate the #imm16 offset within the page and add it to the top address will
 correctly yield the address of array2.
 ### Global Offset Table (GOT)
 **If the data is stored within the same executable**, the assembly directives page and pageoff are equivalent to the use of 
@@ -280,30 +302,30 @@ Here the lsl #0 can be omitted and normally will. As before it means $2^0 = 1$.
 This time we hope forward in memory in bytes 
 `[ 0x100004000 + (0x11 * 0x1 )]   = [ 0x100004011]` . 
 # Branching
-Branching is the ability for a computer to execute instructions in memory one
-at a time and react to certain conditions and branch out into other parts of the
+Branching is the ability for a computer deviate from the consequetive execution of instructions 
+in memory one at a time and react to certain conditions and branch out into other parts of the
 program code.
 
 Branching is where the magic happens.
 
 Before the invention of digital technology, electronic devices were very rigid.
-Rigid in a sense that they followed a strict control flow. They were also analog but
-that's not the point here. Every device before the takeover of the semiconductor
+Rigid in a sense that they followed a strict control flow. They were analog, which
+means continuous instead of discreet. Every device before the takeover of the semiconductor
 followed a very rigid path of execution. Complex behaviour was carefully managed
-by signals and timing. Let's take an old CRT TV as an example. With the help of
+by signals and timing. Let's take an old CRT TV[^CRT] as an example. With the help of
 a magnetic field an electron beam can be moved by changing the magnetic field
-between two metal plates, which is directly proportional to the current. But getting
-MacGyver on the screen is a little more involved. In order for a picture to from in
-front of the screen, the signal has to go from left to right and the moment it reaches
-the end needs to reset to the left. At the same time the magnetic field for the vertical
-direction has to notch the beam down one scanline. All of that was carefully orchestrated by signals.
-The AC signal was used to create two sawtooth signals of two different frequencies with the
-help of basically capacitors, to guide the beam. Each time the current dropped to zero,
-the beam would reset to the left and when the slower sawtooth signal dropped to zero the beam would
-reset to the top left. The video signal would then be superposed on the beam to change
-the intensity and form the picture. Turning from black (low intensity), over different shades
-of gray to white (full intensity). Additionally, the signal had a pulse to synchronize the
-horizontal and vertical beam with the automatic moving beam.
+between magnetic coils by the means of the Lorentz foce, which are directly proportional 
+to the current. But getting MacGyver on the screen is a little more involved. In order 
+for a picture to from in front of the screen, the signal has to go from left to right 
+and the moment it reaches the end needs to reset to the left. At the same time the magnetic 
+field for the vertical direction has to notch the beam down one scanline. All of that was 
+carefully orchestrated by signals.  The AC signal was used to create two sawtooth signals 
+of two different frequencies with the help of basically capacitors, to guide the beam. 
+Each time the current dropped to zero, the beam would reset to the left and when the slower 
+sawtooth signal dropped to zero the beam would reset to the top left. The video signal would 
+then be superposed on the beam to change the intensity and form the picture. Turning from black 
+(low intensity), over different shades of gray to white (full intensity). Additionally, the 
+signal had a pulse to synchronize the horizontal and vertical beam with the automatic moving beam.
 
 
 The takeaway point here is that even though a device like a CRT TV seems to have something
@@ -451,6 +473,7 @@ flag will be set.
 [^1]: The Address Bus Low and Address Bus High for the 6502.
 [^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch-Execution Cycle, the assembler would simply subtract that number and place the correct one in the opcode. All of that would depend on how the CPU is "wired" together.
 [^3]: Pun intended, asshole :)
+[^CRT]: CRT stands for Cathode Ray Tube.
 [^linSearch]: It's actually a good exercise (after Chapter 3 and maybe 8) to implement
     ```
     void *lsearch(void *baseAddr, void *elm,  int *elmSize, int n, int (*cmp)(void*,void*));
