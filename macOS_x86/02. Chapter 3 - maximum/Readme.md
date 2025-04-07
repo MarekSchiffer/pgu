@@ -28,8 +28,8 @@ is called immediate Mode. The number 11 comes directly from the RAM slot we writ
 This is a direct consequence of the von Neumann architecture.
 
 ![](https://github.com/MarekSchiffer/pgu/blob/main/macOS_x86/02.%20Chapter%203%20-%20maximum/Screenshots/Addressing_macOS.png)
-* Inserting the address directly into the register * \
-\
+Inserting the address directly into the register
+
 If we had the address of an array, like your list, we can insert it immediately in a register
 ```
 movl $0x100001000, %rcx
@@ -47,7 +47,7 @@ tbe value at that address on the BUS and captures it in edx.
 Et voila!
 ## IP-Relative Addressing Mode
 ![](https://github.com/MarekSchiffer/pgu/blob/main/macOS_x86/02.%20Chapter%203%20-%20maximum/Screenshots/RIP-Relative_macOS.png)
-* list(%rip) gets replaced by 15(%rip). We can check, that 0xff1+0x15 is indeed 0x1000 *
+list(%rip) gets replaced by 15(%rip). We can check, that 0xff1+0x15 is indeed 0x1000
 Under macOS Direct Addressing Mode is not supported anymore. Instead
 IP-Relative Addressing Mode is used.
 ```
@@ -253,9 +253,10 @@ it necessary to take care of branching every time something is not supposed to b
 The quirk of AT&T syntax is that the comparison in the cmp statement has to be read from right to left (see comment).
 Based on the comparision result the carry flag will be set within the rflags register.
 
-The reason for the quirky notation is that cmpq is just
-another name for subq. Since `subq %rbx, %rax` means $\text{rax}-\text{rbx}$, $rax<0$ if $\text{rbx} > \text{rax}$
-And accordingly if they're equal or $\text{rbx} < \text{rax}.
+The reason for the quirky notation is that cmpq is just another name for subq. 
+Since `subq %rbx, %rax` means $\text{rax}-\text{rbx}$, if $\text{rax}$ is greater than $\text{rbx}$, then
+$\text{rax}-\text{rbx} > 0 \Leftrightarrow \text{rbx} < \tex{rax} $
+And accordingly if they're equal or $\text{rbx} < \text{rax}$.
 
 [^1]: The Address Bus Low and Address Bus High for the 6502.
 [^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch-Execution Cycle, the assembler would simply subtract that number and place the correct one in the opcode. All of that would depend on how the CPU is "wired" together.
