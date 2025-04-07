@@ -34,7 +34,7 @@ Behind the curtain this chapter is about two things
 - [Overview](##Overview)
 - [Addressing Modes](#Addressing-Modes)
 - [Branching (Fetch-Execution Cycle)](#Branching)
-- [Branching Practical](#Branching-\(Practical\))
+- [Branching Practical](#Branching-(Practical))
 
 # Addressing Modes
 Addressing modes between arm64 and x86_64 are quite different.
@@ -437,7 +437,8 @@ Here we demonstrate a simple if statement. Comparing the code flow with an usual
 If the condition evaluates to `true` we jump over the else condition to the if clause. We also need to take care to not execute the if clause if we fall through and executes the else clause. Basic quantifier logic always dictates, that the condition can be flipped if the logical operations are also negated. Therefore in this example the if condition could be flipped and the if and else block exchanged.
 
 
-As outlined above, without a branch condition the The Fetch-Execution-Cycle executes one instruction at a time like clockwork.
+As outlined above, without a branch condition the The Fetch-Execution-Cycle executes one instruction at a time like clockwork, making
+it necessary to take care of branching every time something is not supposed to be executed.
 
 Again the cmp command is an alias for subs (subtract extended and scaled register, setting flags). cmp will therefore be substituted with `subs xzr, x1, x2` and since we read from right to left, x2 will be subtracted from x1. $\text{x1}-\text{x2}$. Therefore if x2 is greater then x1, $\text{x1}-\text{x2} > 0 \Leftrightarrow \text{x1} > \text{x2}$.
 
