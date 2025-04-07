@@ -441,7 +441,7 @@ As outlined above, without a branch condition the The Fetch-Execution-Cycle exec
 it necessary to take care of branching every time something is not supposed to be executed.
 
 Again the cmp command is an alias for subs (subtract extended and scaled register, setting flags). cmp will therefore be substituted with `subs xzr, x1, x2` and since we read from right to left, x2 will be subtracted from x1. $\text{x1}-\text{x2}$. 
-Therefore if x1 is greater then x2, $\text{x1}-\text{x2} > 0 \Leftrightarrow \text{x1} > \text{x2}$.
+Therefore if x1 is smaller then x2, $\text{x1}-\text{x2} < 0 \Leftrightarrow \text{x1} < \text{x2}$.
 
 [^1]: The Address Bus Low and Address Bus High for the 6502.
 [^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch-Execution Cycle, the assembler would simply subtract that number and place the correct one in the opcode. All of that would depend on how the CPU is "wired" together.
