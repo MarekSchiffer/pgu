@@ -70,16 +70,15 @@ mov x0, #11
 is called immediate Mode.
 Inserting the value immediately into the register.
 
-## PC-Relative Addressing Mode
-### Literal load using PC-Relative ( Relative Addressing Mode movq(%rip) )
-Now, that we have the hacks out of the way, let's look how we could load the first element of the array into a register normally.
+### Literal Load (using PC-Relative)
+First, let's look how we could load the first element of the array into a register normally.
 ```asm
  ldr x0, array
 ```
 will load the first element at the address of array into register x0.
 This is therefore called literal load using PC-Relative. The important part
 to remember is that the value will be loaded into x0, not the address.
-### Indirect Addressing Mode (Memory)
+### PC-relative addressing Mode 
 If we don't want the first element but rather the address of array we can
 use the command adr
 ```asm
@@ -245,7 +244,7 @@ ldr x0, [x1]
 ```
 In this example the address at x1 is first dereferenced and loaded into x2 before 32 gets added to x1. We'll use a close relative of this instruction in the next chapter in the context of the stack usage.
 
-### Base Pointer Addressing Mode
+### Register Offset Addressing Mode
 Now, let's assume we want to access an array. If we declare the array as .quad, each element will
 be 8 Bytes long. To access the 3rd element we need to add 3 Bytes (24-Bit) to the base
 address. We can do that with an base pointer offset.
