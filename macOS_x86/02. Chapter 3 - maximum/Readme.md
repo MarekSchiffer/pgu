@@ -251,12 +251,15 @@ As outlined above, without a branch condition the The Fetch-Execution-Cycle exec
 it necessary to take care of branching every time something is not supposed to be executed.
 
 The quirk of AT&T syntax is that the comparison in the cmp statement has to be read from right to left (see comment).
-Based on the comparision result the carry flag will be set within the rflags register.
 
 The reason for the quirky notation is that cmpq is just another name for subq. 
 Since `subq %rbx, %rax` means $\text{rax}-\text{rbx}$, if $\text{rax}$ is greater than $\text{rbx}$, then
 $\text{rax}-\text{rbx} > 0 \Leftrightarrow \text{rbx} < \text{rax} $
 And accordingly if they're equal or $\text{rbx} < \text{rax}$.
+
+Based on the comparision result we follow the holy trinity, $a=b$, $a < b$ or $a > b$. If the two values are equal,
+the zero flag will be set. If the $b>a$ the sign flag will be set and if $a < b$, neihter the zero flag nor the sign
+flag will be set.
 
 [^1]: The Address Bus Low and Address Bus High for the 6502.
 [^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch-Execution Cycle, the assembler would simply subtract that number and place the correct one in the opcode. All of that would depend on how the CPU is "wired" together.
