@@ -255,7 +255,7 @@ Based on the comparision result the carry flag will be set within the rflags reg
 
 The reason for the quirky notation is that cmpq is just another name for subq. 
 Since `subq %rbx, %rax` means $\text{rax}-\text{rbx}$, if $\text{rax}$ is greater than $\text{rbx}$, then
-$\text{rax}-\text{rbx} > 0 \Leftrightarrow \text{rbx} < \tex{rax} $
+$\text{rax}-\text{rbx} > 0 \Leftrightarrow \text{rbx} < \text{rax} $
 And accordingly if they're equal or $\text{rbx} < \text{rax}$.
 
 [^1]: The Address Bus Low and Address Bus High for the 6502.
