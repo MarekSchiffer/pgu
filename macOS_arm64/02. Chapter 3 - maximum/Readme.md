@@ -1,3 +1,11 @@
+<div align="center">
+   <img src="./.assets/2025-04-07_Marek_Schiffer_Graph_CPU_Architecture_arm64.png" alt="Conceptual CPU Design" width="600">
+   <div align ="center">
+      <figcaption> Figure 1: Conceptual CPU Design Load, ALU, Store. </figcaption>
+   </div>
+   <br> <br>
+</div>
+
 ## Overview
 This program finds the maximum in an array of integers by the means
 of linear search[^linSearch]. We'll load the first element into a register as

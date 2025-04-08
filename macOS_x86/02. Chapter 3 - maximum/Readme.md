@@ -1,3 +1,11 @@
+<div align="center">
+   <img src="./.assets/2025-04-07_Marek_Schiffer_Graph_CPU_Architecture_x86.png" alt="Conceptual CPU Design" width="600">
+   <div align ="center">
+      <figcaption> Figure 1: Conceptual CPU Design Load, ALU, Store. </figcaption>
+   </div>
+   <br> <br>
+</div>
+
 ## Overview
 This program finds the maximum in an array of integers by the means
 of linear search[^linSearch]. We'll load the first element into a register as
@@ -92,30 +100,30 @@ movq 8(%rcx,%rdi,4), %rdx
 ```
 To reach the 52.
 # Branching
-Branching is the ability for a computer to execute instructions in memory one
-at a time and react to certain conditions and branch out into other parts of the
+Branching is the ability for a computer deviate from the consequetive execution of instructions 
+in memory one at a time and react to certain conditions and branch out into other parts of the
 program code.
 
 Branching is where the magic happens.
 
 Before the invention of digital technology, electronic devices were very rigid.
-Rigid in a sense that they followed a strict control flow. They were also analog but
-that's not the point here. Every device before the takeover of the semiconductor
+Rigid in a sense that they followed a strict control flow. They were analog, which
+means continuous instead of discreet. Every device before the takeover of the semiconductor
 followed a very rigid path of execution. Complex behaviour was carefully managed
-by signals and timing. Let's take an old CRT TV as an example. With the help of
+by signals and timing. Let's take an old CRT TV[^CRT] as an example. With the help of
 a magnetic field an electron beam can be moved by changing the magnetic field
-between two metal plates, which is directly proportional to the current. But getting
-MacGyver on the screen is a little more involved. In order for a picture to from in
-front of the screen, the signal has to go from left to right and the moment it reaches
-the end needs to reset to the left. At the same time the magnetic field for the vertical
-direction has to notch the beam down one scanline. All of that was carefully orchestrated by signals.
-The AC signal was used to create two sawtooth signals of two different frequencies with the
-help of basically capacitors, to guide the beam. Each time the current dropped to zero,
-the beam would reset to the left and when the slower sawtooth signal dropped to zero the beam would
-reset to the top left. The video signal would then be superposed on the beam to change
-the intensity and form the picture. Turning from black (low intensity), over different shades
-of gray to white (full intensity). Additionally, the signal had a pulse to synchronize the
-horizontal and vertical beam with the automatic moving beam.
+between magnetic coils by the means of the Lorentz foce, which are directly proportional 
+to the current. But getting MacGyver on the screen is a little more involved. In order 
+for a picture to from in front of the screen, the signal has to go from left to right 
+and the moment it reaches the end needs to reset to the left. At the same time the magnetic 
+field for the vertical direction has to notch the beam down one scanline. All of that was 
+carefully orchestrated by signals.  The AC signal was used to create two sawtooth signals 
+of two different frequencies with the help of basically capacitors, to guide the beam. 
+Each time the current dropped to zero, the beam would reset to the left and when the slower 
+sawtooth signal dropped to zero the beam would reset to the top left. The video signal would 
+then be superposed on the beam to change the intensity and form the picture. Turning from black 
+(low intensity), over different shades of gray to white (full intensity). Additionally, the 
+signal had a pulse to synchronize the horizontal and vertical beam with the automatic moving beam.
 
 
 The takeaway point here is that even though a device like a CRT TV seems to have something
@@ -264,6 +272,7 @@ flag will be set.
 [^1]: The Address Bus Low and Address Bus High for the 6502.
 [^2]: Note, if we assume the instruction length is automatically added at the end of the Fetch-Execution Cycle, the assembler would simply subtract that number and place the correct one in the opcode. All of that would depend on how the CPU is "wired" together.
 [^3]: Pun intended, asshole :)
+[^CRT]: CRT stands for Cathode Ray Tube.
 [^linSearch]: It's actually a good exercise (after Chapter 3 and maybe 8) to implement
     ```
     void *lsearch(void *baseAddr, void *elm,  int *elmSize, int n, int (*cmp)(void*,void*));
