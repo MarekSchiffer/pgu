@@ -37,9 +37,7 @@ ld -e _start exit_arm64.o -o exit_arm64
 ```
 Please note, static linking is now depreciated.
 In the x86_64 versions, we primarily linked the executables as static.
-Apple doesn't allow that anymore. At the beginning it was also necessary
-to link against lSystem and sysroot. As of now, this is no longer necessary,
-but may change in the future again.
+Apple doesn't allow that anymore.
 
 <div align=center>
   <img src="https://github.com/MarekSchiffer/pgu/blob/main/macOS_arm64/01.%20Chapter%203%20-%20exit/.assets/arm64_Registers.png" alt="ra" width="600">
