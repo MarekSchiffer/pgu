@@ -1,8 +1,8 @@
 # Introduction
-Numbers in memory are represented for the most efficient use for addition
+Numbers in memory are represented for the most efficient use of addition
 and multiplication. The corresponding ASCII representtion of each digit is
 different. Therefore in order print a number to the terminal it has to be
-converted into its ASCII representation. The digit $0$ is $48 and $9$ is 
+converted into its ASCII representation. The digit $0$ is $48$ and $9$ is 
 $57$.
 
 As an example let's take the number $1998$ and transform it into it's respective 
